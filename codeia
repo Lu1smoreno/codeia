@@ -1,3 +1,5 @@
+MODULO1
+
 Option Explicit
 
 ' Variables globales
@@ -495,3 +497,223 @@ Sub LimpiarVariables()
     rutaPreciosNetos = ""
     Set listaClientes = Nothing
 End Sub
+
+USERFORM1
+
+' ====================================================================
+' CÓDIGO PARA EL USERFORM (UserForm1) - VERSIÓN OPTIMIZADA Y ROBUSTA
+' PEGAR ESTAS SUBRUTINAS EN EL MÓDULO DE CÓDIGO DE TU UserForm1.
+' Para ello, en el Editor VBA, haz doble clic en UserForm1 en el explorador de proyectos.
+' ====================================================================
+
+Option Explicit ' Obliga a declarar todas las variables, mejorando la robustez
+
+Private Sub UserForm_Initialize()
+    ' Configura las propiedades iniciales del UserForm y sus controles al abrirse.
+    Me.Caption = "Sistema de Gestión de Clientes v2.0" ' Título del formulario
+    
+    ' Configuración de etiquetas y campos de texto
+    Me.TextBox1.Text = "" ' Campo de entrada del código de cliente
+    Me.Label1.Caption = "Introduce el código del cliente" ' Etiqueta para el nombre del cliente/instrucción
+    
+    ' Etiquetas de estado para la importación de archivos
+    Me.Label5.Caption = "Esperando Inventario..." ' Estado para el archivo de inventario
+    Me.Label6.Caption = "Esperando Ventas..." ' Estado para el archivo de ventas
+    Me.Label7.Caption = "Esperando Comparativa..." ' Estado para el archivo comparativo
+    
+    ' Deshabilita botones que requieren un cliente o archivos importados al inicio
+    Me.CommandButton2.Enabled = False ' Botón 'Importar Inventario'
+    Me.CommandButton3.Enabled = False ' Botón 'Importar Ventas'
+    Me.CommandButton4.Enabled = False ' Botón 'Importar Comparativa'
+    Me.CommandButton5.Enabled = False ' Botón 'Procesar Datos'
+    ' Me.CommandButton9.Enabled = False ' Botón 'Generar Reporte' (si CommandButton9 es el de reporte)
+    
+    ' --- NOTA SOBRE CONTROLES DE "PRECIOS NETOS" ---
+    ' Los controles relacionados con "Precios Netos" (TextBoxRutaPreciosNetos, CommandButtonExaminarNetos,
+    ' CommandButtonImportarNetos) no son visibles en la imagen principal de tu UserForm (image_554ee5.png).
+    ' Si estos controles existen en tu diseño de UserForm, asegúrate de que estén correctamente posicionados
+    ' y que su lógica se adapte a tu flujo de trabajo. Para este código, se han comentado
+    ' las líneas relacionadas con ellos, asumiendo que no forman parte del UI principal visible.
+    ' Si necesitas integrarlos, descomenta y adapta el código según tu diseño.
+    ' Me.TextBoxRutaPreciosNetos.Text = ""
+    ' Me.CommandButtonImportarNetos.Enabled = False
+    ' Me.CommandButtonExaminarNetos.Enabled = True
+End Sub
+
+Private Sub CommandButton1_Click() ' Botón 'BUSCAR' (junto al campo de código de cliente)
+    Dim clientCode As String
+    clientCode = Trim(Me.TextBox1.Text) ' Obtiene el código de cliente y elimina espacios en blanco
+
+    If Len(clientCode) = 0 Then
+        MsgBox "Por favor, introduce un código de cliente para buscar.", vbExclamation, "Entrada Requerida"
+        Exit Sub
+    End If
+
+    ' Se asume que 'BuscarCliente' es una función definida en un Módulo estándar (ej. Module1)
+    ' que busca el cliente y devuelve su nombre, o una cadena vacía si no lo encuentra.
+    Dim foundClientName As String
+    foundClientName = BuscarCliente(clientCode) ' Llama a la función BuscarCliente
+    
+    If foundClientName <> "" Then
+        Me.Label1.Caption = "Cliente Seleccionado: " & foundClientName ' Muestra el nombre del cliente
+        ' Habilita los botones de importación y procesamiento una vez que el cliente es encontrado
+        Me.CommandButton2.Enabled = True
+        Me.CommandButton3.Enabled = True
+        Me.CommandButton4.Enabled = True
+        Me.CommandButton5.Enabled = True
+        ' Me.CommandButton9.Enabled = True ' Habilita el botón de Generar Reporte
+    Else
+        Me.Label1.Caption = "Cliente no encontrado."
+        MsgBox "El código de cliente '" & clientCode & "' no se encontró.", vbInformation, "Cliente No Encontrado"
+        ' Deshabilita los botones si el cliente no es encontrado
+        Me.CommandButton2.Enabled = False
+        Me.CommandButton3.Enabled = False
+        Me.CommandButton4.Enabled = False
+        Me.CommandButton5.Enabled = False
+        ' Me.CommandButton9.Enabled = False
+    End If
+End Sub
+
+Private Sub CommandButton2_Click() ' Botón 'Importar Inventario'
+    On Error GoTo ErrorHandler
+    Application.StatusBar = "Importando Inventario..."
+    Call ImportarInventario ' Llama a la subrutina de importación
+    Me.Label5.Caption = "Inventario: Importado" ' Actualiza el estado en la etiqueta
+    Application.StatusBar = False
+    Exit Sub
+ErrorHandler:
+    Me.Label5.Caption = "Inventario: Error"
+    MsgBox "Ocurrió un error al importar el inventario. Verifique que el archivo exista y sea válido.", vbCritical, "Error de Importación"
+    Application.StatusBar = False
+End Sub
+
+Private Sub CommandButton3_Click() ' Botón 'Importar Ventas' (en la imagen "Importar Ventas cliente")
+    On Error GoTo ErrorHandler
+    Application.StatusBar = "Importando Ventas..."
+    Call ImportarVentas ' Llama a la subrutina de importación
+    Me.Label6.Caption = "Ventas: Importadas" ' Actualiza el estado en la etiqueta
+    Application.StatusBar = False
+    Exit Sub
+ErrorHandler:
+    Me.Label6.Caption = "Ventas: Error"
+    MsgBox "Ocurrió un error al importar las ventas. Verifique que el archivo exista y sea válido.", vbCritical, "Error de Importación"
+    Application.StatusBar = False
+End Sub
+
+Private Sub CommandButton4_Click() ' Botón 'Importar Comparativa' (en la imagen "Importar Ventas generales")
+    ' A pesar del texto en la imagen ("Importar Ventas generales"), se asume que este botón
+    ' se corresponde con la función de "Importar Comparativa" descrita en la guía.
+    On Error GoTo ErrorHandler
+    Application.StatusBar = "Importando Comparativa..."
+    Call ImportarComparativa ' Llama a la subrutina de importación
+    Me.Label7.Caption = "Comparativa: Importada" ' Actualiza el estado en la etiqueta
+    Application.StatusBar = False
+    Exit Sub
+ErrorHandler:
+    Me.Label7.Caption = "Comparativa: Error"
+    MsgBox "Ocurrió un error al importar la comparativa. Verifique que el archivo exista y sea válido.", vbCritical, "Error de Importación"
+    Application.StatusBar = False
+End Sub
+
+Private Sub CommandButton5_Click() ' Botón 'PROCESAR DATOS'
+    ' Verifica que todos los archivos necesarios hayan sido importados
+    If Me.Label5.Caption <> "Inventario: Importado" Or _
+       Me.Label6.Caption <> "Ventas: Importadas" Or _
+       Me.Label7.Caption <> "Comparativa: Importada" Then
+        MsgBox "Por favor, importa todos los archivos (Inventario, Ventas, Comparativa) antes de procesar los datos.", vbExclamation, "Archivos Faltantes"
+        Exit Sub
+    End If
+
+    On Error GoTo ErrorHandler
+    Application.ScreenUpdating = False ' Desactiva la actualización de pantalla para mejorar el rendimiento
+    Application.EnableEvents = False   ' Desactiva eventos para evitar interrupciones
+
+    Me.Label1.Caption = "Procesando datos... Por favor, espere." ' Mensaje de estado
+    Me.Repaint ' Fuerza la actualización visual del formulario
+    Application.StatusBar = "Calculando KPIs y generando análisis..."
+
+    Call ProcesarDatos ' Llama a la subrutina principal de procesamiento de datos
+    
+    Application.ScreenUpdating = True ' Reactiva la actualización de pantalla
+    Application.EnableEvents = True   ' Reactiva eventos
+    Application.StatusBar = False
+
+    MsgBox "Datos procesados exitosamente. El Dashboard está listo.", vbInformation, "Proceso Completado"
+    
+    Me.Hide ' Oculta el UserForm después de la confirmación y el procesamiento
+    
+    Exit Sub
+ErrorHandler:
+    Application.ScreenUpdating = True
+    Application.EnableEvents = True
+    Application.StatusBar = False
+    Me.Label1.Caption = "Error al procesar datos."
+    MsgBox "Ocurrió un error durante el procesamiento de datos. Revise los módulos de código.", vbCritical, "Error de Procesamiento"
+End Sub
+
+Private Sub CommandButton7_Click() ' Botón 'Limpiar' (posición izquierda inferior en la imagen)
+    ' Restablece el formulario a su estado inicial
+    Me.TextBox1.Text = ""
+    Me.Label1.Caption = "Introduce el código del cliente"
+    Me.Label5.Caption = "Esperando Inventario..."
+    Me.Label6.Caption = "Esperando Ventas..."
+    Me.Label7.Caption = "Esperando Comparativa..."
+    
+    ' Deshabilita los botones de acción hasta que se seleccione un nuevo cliente y se importen los archivos
+    Me.CommandButton2.Enabled = False
+    Me.CommandButton3.Enabled = False
+    Me.CommandButton4.Enabled = False
+    Me.CommandButton5.Enabled = False
+    ' Me.CommandButton9.Enabled = False
+    
+    MsgBox "Formulario limpiado. Listo para una nueva operación.", vbInformation, "Formulario Reiniciado"
+End Sub
+
+Private Sub CommandButton6_Click() ' Botón 'Salir' (posición derecha inferior en la imagen)
+    ' Cierra el UserForm completamente
+    Unload Me
+End Sub
+
+Private Sub CommandButton9_Click() ' Botón 'GENERAR REPORTE' (asumiendo este nombre para el botón visible en la imagen)
+    On Error GoTo ErrorHandler
+    Application.StatusBar = "Generando y enviando reporte..."
+    Call GenerarReporte ' Llama a la subrutina para generar el reporte
+    MsgBox "Reporte generado y listo. Se ha preparado el email (si configurado).", vbInformation, "Reporte Generado"
+    Application.StatusBar = False
+    Exit Sub
+ErrorHandler:
+    MsgBox "Ocurrió un error al generar el reporte. Verifique la configuración de email y los datos.", vbCritical, "Error al Generar Reporte"
+    Application.StatusBar = False
+End Sub
+
+' --- Se han eliminado o comentado subrutinas no utilizadas o redundantes: ---
+' Private Sub Busquedacliente_Click() - Esta subrutina era redundante con CommandButton1_Click.
+' Si tenías un botón llamado "Busquedacliente", por favor, usa CommandButton1 para la funcionalidad de búsqueda.
+
+' --- Comentadas las subs de "Precios Netos" si no están visibles en el UserForm principal ---
+' Private Sub CommandButtonExaminarNetos_Click()
+'   Dim rutaArchivo As Variant
+'   rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de precios netos")
+'   If rutaArchivo = False Then ' Si el usuario cancela la selección
+'     Me.TextBoxRutaPreciosNetos.Text = ""
+'     Me.CommandButtonImportarNetos.Enabled = False
+'     MsgBox "Selección de archivo de precios netos cancelada.", vbInformation
+'   Else
+'     Me.TextBoxRutaPreciosNetos.Text = rutaArchivo
+'     Me.CommandButtonImportarNetos.Enabled = True ' Habilita el botón de importar
+'   End If
+' End Sub
+
+' Private Sub CommandButtonImportarNetos_Click()
+'   Dim ruta As String
+'   ruta = Me.TextBoxRutaPreciosNetos.Text
+'   If ruta = "" Then
+'     MsgBox "Por favor, selecciona un archivo de precios netos primero.", vbExclamation
+'     Exit Sub
+'   End If
+'   Call ImportarPreciosNetosDesdeArchivo(ruta) ' Asume que esta función existe en un módulo
+'   Me.CommandButtonImportarNetos.Enabled = False ' Deshabilita el botón después de la importación
+' End Sub
+
+
+
