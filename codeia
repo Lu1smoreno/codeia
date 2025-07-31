@@ -2,17 +2,51 @@
 <html lang="es">
 <head>
   <meta charset="UTF-8">
-  <title>Panel de Control de Inventario y Recomendaciones</title>
+  <title>Gestor de Inventario</title>
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <style>
-    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #f4f6fa; }
-    header { background: #446ccc; color: #fff; padding: 1.5em 2em; }
-    main { max-width: 1200px; margin: 2em auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #8882; }
-    section { padding: 2em; }
-    table { border-collapse: collapse; width: 100%; font-size: 15px; }
-    th, td { padding: 8px 12px; border-bottom: 1px solid #eee; }
-    th { background: #446ccc; color: #fff; }
-    tr:nth-child(even) { background: #f4f6fa; }
+    body { margin:0; font-family: 'Segoe UI', Arial, sans-serif; background: #eef2fb; }
+    header { background: #446ccc; color: #fff; padding: 1.5em 2em; box-shadow: 0 2px 8px #2235; }
+    .container { max-width: 480px; margin: 2.5em auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 16px #446ccc20; padding: 2em 2.5em; }
+    h1, h2 { text-align: center; margin-top: 0; }
+    .form-row { margin: 1.5em 0 .7em 0; display: flex; flex-direction: column; }
+    label { font-weight: 600; margin-bottom: .3em; }
+    input[type="text"], input[type="email"] { padding: 10px; border-radius: 7px; border: 1px solid #bbc6e6; font-size: 1em; }
+    button, .dropdown-btn {
+      background: #446ccc; color: #fff; border: none; border-radius: 7px; padding: 10px 0;
+      font-size: 1.1em; font-weight: 600; margin-top: 1.1em; cursor: pointer; transition: background .2s;
+    }
+    button:disabled { background: #bbc6e6 !important; cursor: not-allowed; }
+    button:hover, .dropdown-btn:hover { background: #264499; }
+    .dropdown { margin: 2em 0 0 0; }
+    .dropdown-btn { width: 100%; text-align: left; position: relative; }
+    .dropdown-btn:after {
+      content: "▼"; position: absolute; right: 15px; top: 12px; font-size: .9em;
+    }
+    .dropdown-content {
+      margin-top: 8px;
+      background: #f7faff; border-radius: 8px; box-shadow: 0 2px 10px #446ccc10;
+      padding: 2em 1.6em 1em 1.6em;
+      display: none;
+      animation: fadeIn .4s;
+    }
+    .dropdown.open .dropdown-content { display: block; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .status-label { font-size: .98em; margin: 8px 0; padding: 6px 0; }
+    .imported { color: #2d8a2d; font-weight: bold; }
+    .waiting { color: #978c24; }
+    .error { color: #a22; }
+    .flex { display: flex; gap: 8px; }
+    .btn-group { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 1.2em; }
+    .btn-group button { flex: 1 1 40%; }
+    .small { font-size: .88em; color: #888; }
+    .center { text-align: center; }
+    .kpis { margin: 2em auto 1em auto; background: #f4f6fa; border-radius: 8px; padding: 1em; font-size: 1em; }
+    .kpis span { margin-right: 1.6em; }
+    .tabla-recs { margin-top: 2em; width: 100%; border-collapse: collapse; font-size: 15px; }
+    .tabla-recs th, .tabla-recs td { padding: 8px 10px; border-bottom: 1px solid #e7eaf2; }
+    .tabla-recs th { background: #446ccc; color: #fff; }
+    .tabla-recs tr:nth-child(even) { background: #f8fafd; }
     .alert { font-weight: bold; padding: 4px 8px; border-radius: 6px; display: inline-block; }
     .urgente { background: #ff6464; color: #222; }
     .critico { background: #ffbc64; color: #222; }
@@ -20,40 +54,81 @@
     .optimo { background: #64ff64; color: #222; }
     .lento { background: #cccccc; color: #222; }
     .sinventas { background: #b4b4b4; color: #222; }
-    .kpis > div { display: inline-block; margin: 0 2em 1em 0; }
-    footer { text-align: center; padding: 2em; color: #999; }
+    .charts-row { display: flex; flex-wrap: wrap; gap: 2em; justify-content: center; margin: 1.5em 0 1.5em 0; }
+    .chart-container { background: #fff; border-radius: 10px; box-shadow: 0 2px 12px #446ccc0c; padding: 1em 1em 0.5em 1em; width: 320px; min-width: 230px; }
+    @media (max-width: 900px) {
+      .charts-row { flex-direction: column; align-items: center; }
+      .chart-container { width: 100%; max-width: 380px; }
+    }
     @media (max-width: 700px) {
-      main, section { padding: 1em; }
-      table, th, td { font-size: 13px; }
+      .container { padding: 1em; }
+      .tabla-recs, .tabla-recs th, .tabla-recs td { font-size: 13px; }
     }
   </style>
 </head>
 <body>
   <header>
-    <h1>Panel de Control de Inventario y Recomendaciones</h1>
+    <h1>Gestor de Inventario</h1>
   </header>
-  <main>
-    <section>
-      <h2>Paso 1: Seleccione Cliente</h2>
-      <input type="text" id="clienteCodigo" placeholder="Código de cliente" style="font-size:16px;padding:6px;">
-      <input type="text" id="clienteNombre" placeholder="Nombre del cliente" style="font-size:16px;margin-left:16px;padding:6px;">
-    </section>
-    <section>
-      <h2>Paso 2: Suba sus archivos Excel</h2>
-      <label>Inventario: <input type="file" id="fileInventario" accept=".xlsx,.xls,.csv"></label>
-      <label style="margin-left:16px;">Ventas: <input type="file" id="fileVentas" accept=".xlsx,.xls,.csv"></label>
-      <label style="margin-left:16px;">Comparativa: <input type="file" id="fileComparativa" accept=".xlsx,.xls,.csv"></label>
-      <button id="btnProcesar" style="margin-left:30px;padding:0.5em 1.2em;font-size:17px;background:#446ccc;color:#fff;border:none;border-radius:6px;">
-        Procesar Datos
-      </button>
-    </section>
-    <section id="kpisSection" style="display:none;">
-      <h2>KPIs Generales</h2>
+  <div class="container" id="registerContainer">
+    <h2>Registro</h2>
+    <div class="form-row">
+      <label for="regEmail">Correo electrónico</label>
+      <input type="email" id="regEmail" placeholder="ejemplo@dominio.com" required>
+    </div>
+    <div class="form-row">
+      <label for="regNombre">Tu nombre</label>
+      <input type="text" id="regNombre" placeholder="Nombre completo" required>
+    </div>
+    <button onclick="registrarUsuario()">Crear perfil</button>
+  </div>
+
+  <div class="container" id="userformContainer" style="display:none;">
+    <div class="center small" id="perfilInfo"></div>
+    <div class="dropdown" id="userDropdown">
+      <button class="dropdown-btn" onclick="toggleDropdown()">Abrir gestor de cliente</button>
+      <div class="dropdown-content">
+        <div class="form-row">
+          <label for="codigoCliente">Código de cliente</label>
+          <input type="text" id="codigoCliente" placeholder="Introduce el código del cliente">
+        </div>
+        <div id="labelCliente" class="status-label waiting">Introduce el código del cliente</div>
+        <div class="flex">
+          <button onclick="buscarCliente()" style="flex:2;">Buscar</button>
+          <button onclick="limpiarFormulario()" style="flex:1;">Limpiar</button>
+        </div>
+        <div class="status-label waiting" id="labelInv">
+          Esperando Inventario...
+          <input type="file" id="fileInventario" accept=".xlsx,.xls,.csv" style="display:none;">
+          <button id="btnImportInv" onclick="document.getElementById('fileInventario').click()" disabled>Importar Inventario</button>
+        </div>
+        <div class="status-label waiting" id="labelVentas">
+          Esperando Ventas...
+          <input type="file" id="fileVentas" accept=".xlsx,.xls,.csv" style="display:none;">
+          <button id="btnImportVentas" onclick="document.getElementById('fileVentas').click()" disabled>Importar Ventas</button>
+        </div>
+        <div class="status-label waiting" id="labelComp">
+          Esperando Comparativa...
+          <input type="file" id="fileComparativa" accept=".xlsx,.xls,.csv" style="display:none;">
+          <button id="btnImportComp" onclick="document.getElementById('fileComparativa').click()" disabled>Importar Comparativa</button>
+        </div>
+        <div class="btn-group">
+          <button id="btnProcesar" onclick="procesarDatos()" disabled>Procesar Datos</button>
+          <button onclick="generarReporte()" disabled id="btnReporte">Exportar Reporte Excel</button>
+          <button onclick="salir()" style="background:#b44;">Salir</button>
+        </div>
+      </div>
+    </div>
+    <div id="kpisSection" style="display:none;">
       <div class="kpis" id="kpis"></div>
-    </section>
-    <section id="recsSection" style="display:none;">
-      <h2>Recomendaciones de Pedido</h2>
-      <table id="tablaRecs">
+      <div class="charts-row" id="chartsRow" style="display:none;">
+        <div class="chart-container"><canvas id="chartInventario" width="300" height="220"></canvas></div>
+        <div class="chart-container"><canvas id="chartVentas" width="300" height="220"></canvas></div>
+        <div class="chart-container"><canvas id="chartMargen" width="300" height="220"></canvas></div>
+      </div>
+    </div>
+    <div id="recsSection" style="display:none;">
+      <table class="tabla-recs" id="tablaRecs">
         <thead>
           <tr>
             <th>Código</th>
@@ -68,54 +143,176 @@
         </thead>
         <tbody></tbody>
       </table>
-    </section>
-  </main>
-  <footer>
-    &copy; <span id="year"></span> - Sistema de Recomendaciones Visual &mdash; Adaptado de VBA a Web
+    </div>
+  </div>
+  <footer class="center" style="margin:3em 0 1em 0;">
+    &copy; <span id="year"></span> - Gestor de Inventario - Adaptado de VBA a Web
   </footer>
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.min.js"></script>
   <script>
     document.getElementById('year').textContent = new Date().getFullYear();
+    // --- Estado global ---
+    let perfil = null;
+    let clienteSeleccionado = "";
+    let nombreCliente = "";
+    const clientesBD = {
+      "25351": "Recambios Barreiro, S.L.U.",
+      "26846": "Centrauto Componentes Auto, Lda.",
+      "31485": "Bragalis Peças e Acess. P/",
+      "32753": "Recambios Y Accesorios Gaudi, S.L.",
+      "44571": "HIDRAULICOS Y FRENOS, S.A."
+      // ... añade más si lo deseas ...
+    };
+    // Datos subidos
     let inventario = [], ventas = [], comparativa = [];
+    let invImport = false, ventasImport = false, compImport = false;
+    // Charts
+    let chartInv, chartVen, chartMar;
 
-    function leerArchivo(input, callback) {
-      const file = input.files[0];
-      if (!file) return callback([]);
+    function registrarUsuario() {
+      const email = document.getElementById('regEmail').value.trim();
+      const nombre = document.getElementById('regNombre').value.trim();
+      if (!email || !nombre) {
+        alert("Por favor, introduce tu correo y nombre.");
+        return;
+      }
+      perfil = { email, nombre };
+      document.getElementById('registerContainer').style.display = 'none';
+      document.getElementById('userformContainer').style.display = '';
+      document.getElementById('perfilInfo').innerHTML =
+        `<b>Bienvenido/a, ${nombre}</b> <br><span class="small">${email}</span>`;
+      limpiarFormulario();
+    }
+
+    function toggleDropdown() {
+      document.getElementById('userDropdown').classList.toggle('open');
+    }
+
+    function buscarCliente() {
+      const code = document.getElementById('codigoCliente').value.trim();
+      if (!code) {
+        mostrarMsg('labelCliente', 'Introduce el código del cliente', 'waiting');
+        return;
+      }
+      if (clientesBD[code]) {
+        clienteSeleccionado = code;
+        nombreCliente = clientesBD[code];
+        mostrarMsg('labelCliente', "Cliente Seleccionado: " + nombreCliente, 'imported');
+        habilitarBotones(true);
+      } else {
+        mostrarMsg('labelCliente', "Cliente no encontrado.", 'error');
+        habilitarBotones(false);
+      }
+    }
+
+    function habilitarBotones(activo) {
+      document.getElementById('btnImportInv').disabled = !activo;
+      document.getElementById('btnImportVentas').disabled = !activo;
+      document.getElementById('btnImportComp').disabled = !activo;
+      document.getElementById('btnProcesar').disabled = true;
+      document.getElementById('btnReporte').disabled = true;
+      mostrarMsg('labelInv', 'Esperando Inventario...', 'waiting');
+      mostrarMsg('labelVentas', 'Esperando Ventas...', 'waiting');
+      mostrarMsg('labelComp', 'Esperando Comparativa...', 'waiting');
+      inventario = []; ventas = []; comparativa = [];
+      invImport = ventasImport = compImport = false;
+    }
+
+    function limpiarFormulario() {
+      document.getElementById('codigoCliente').value = '';
+      mostrarMsg('labelCliente', 'Introduce el código del cliente', 'waiting');
+      mostrarMsg('labelInv', 'Esperando Inventario...', 'waiting');
+      mostrarMsg('labelVentas', 'Esperando Ventas...', 'waiting');
+      mostrarMsg('labelComp', 'Esperando Comparativa...', 'waiting');
+      document.getElementById('btnImportInv').disabled = true;
+      document.getElementById('btnImportVentas').disabled = true;
+      document.getElementById('btnImportComp').disabled = true;
+      document.getElementById('btnProcesar').disabled = true;
+      document.getElementById('btnReporte').disabled = true;
+      clienteSeleccionado = "";
+      nombreCliente = "";
+      inventario = []; ventas = []; comparativa = [];
+      invImport = ventasImport = compImport = false;
+      document.getElementById('kpisSection').style.display='none';
+      document.getElementById('chartsRow').style.display='none';
+      document.getElementById('recsSection').style.display='none';
+    }
+
+    function mostrarMsg(id, txt, tipo) {
+      let el = document.getElementById(id);
+      el.childNodes[0].textContent = txt;
+      el.className = 'status-label ' + tipo;
+    }
+
+    // --- Importación real de archivos ---
+    document.getElementById('fileInventario').addEventListener('change', e => {
+      leerArchivo(e.target.files[0], data => {
+        inventario = data;
+        invImport = true;
+        mostrarMsg('labelInv', 'Inventario: Importado', 'imported');
+        checkArchivosImportados();
+      });
+    });
+    document.getElementById('fileVentas').addEventListener('change', e => {
+      leerArchivo(e.target.files[0], data => {
+        ventas = data;
+        ventasImport = true;
+        mostrarMsg('labelVentas', 'Ventas: Importadas', 'imported');
+        checkArchivosImportados();
+      });
+    });
+    document.getElementById('fileComparativa').addEventListener('change', e => {
+      leerArchivo(e.target.files[0], data => {
+        comparativa = data;
+        compImport = true;
+        mostrarMsg('labelComp', 'Comparativa: Importada', 'imported');
+        checkArchivosImportados();
+      });
+    });
+
+    function leerArchivo(file, cb) {
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = e => {
         let data = new Uint8Array(e.target.result);
         let workbook = XLSX.read(data, {type: 'array'});
         let sheet = workbook.Sheets[workbook.SheetNames[0]];
-        callback(XLSX.utils.sheet_to_json(sheet, {header:1}));
+        cb(XLSX.utils.sheet_to_json(sheet, {header:1}));
       };
       reader.readAsArrayBuffer(file);
     }
 
-    document.getElementById('fileInventario').addEventListener('change', e => {
-      leerArchivo(e.target, data => { inventario = data; });
-    });
-    document.getElementById('fileVentas').addEventListener('change', e => {
-      leerArchivo(e.target, data => { ventas = data; });
-    });
-    document.getElementById('fileComparativa').addEventListener('change', e => {
-      leerArchivo(e.target, data => { comparativa = data; });
-    });
+    function checkArchivosImportados() {
+      if (invImport && ventasImport && compImport) {
+        document.getElementById('btnProcesar').disabled = false;
+      }
+    }
 
-    document.getElementById('btnProcesar').onclick = function() {
-      const clienteCodigo = document.getElementById('clienteCodigo').value.trim();
-      const clienteNombre = document.getElementById('clienteNombre').value.trim();
-      if (!clienteCodigo || !clienteNombre || !inventario.length || !ventas.length || !comparativa.length) {
-        alert("Por favor, complete cliente y cargue los tres archivos.");
+    function procesarDatos() {
+      if (!(invImport && ventasImport && compImport)) {
+        alert("Debes importar Inventario, Ventas y Comparativa.");
         return;
       }
-      // Procesamiento de KPIs y recomendaciones
+      mostrarMsg('labelCliente', 'Procesando datos... Por favor, espere.', 'waiting');
+      setTimeout(() => {
+        mostrarMsg('labelCliente', 'Datos procesados exitosamente. El Dashboard está listo.', 'imported');
+        document.getElementById('btnReporte').disabled = false;
+        mostrarKPIsyRecs();
+        alert("Datos procesados exitosamente. El Dashboard está listo.");
+      }, 900);
+    }
+
+    function mostrarKPIsyRecs() {
       let totalRefs = inventario.length - 1;
       let valorInventario = 0, stockMuerto = 0, stockCritico = 0, ventasNeto = 0, ventasTotalesComp = 0, margenTotal = 0, contadorMargen = 0;
       let recs = [];
+      let ventasArray = [];
       const IDX = { COD: 0, DESC: 1, STOCK: 2, COSTE: 3, VENTA: 4 };
       let ventasMap = {}, compMap = {};
       ventas.slice(1).forEach(row => ventasMap[row[0]] = row[2]);
       comparativa.slice(1).forEach(row => compMap[row[0]] = row[2]);
+      let statusCount = { sano:0, critico:0, muerto:0, bajo:0, sinventas:0 };
       inventario.slice(1).forEach(row => {
         let stock = Number(row[IDX.STOCK]) || 0;
         let coste = Number(row[IDX.COSTE]) || 0;
@@ -123,21 +320,24 @@
         let ventasCliente = Number(ventasMap[row[IDX.COD]]) || 0;
         let ventasMercado = Number(compMap[row[IDX.COD]]) || 0;
         valorInventario += stock * coste;
-        if (stock === 0) stockMuerto++;
-        if (stock > 0 && stock < 5) stockCritico++;
+        if (stock === 0) { stockMuerto++; statusCount.muerto++; }
+        if (stock > 0 && stock < 5) { stockCritico++; statusCount.critico++; }
+        if (ventasCliente === 0) statusCount.sinventas++;
+        if (stock >= 5 && ventasCliente > 0) statusCount.sano++;
         ventasNeto += ventasCliente * venta;
+        ventasArray.push(ventasCliente);
         if (venta > 0) {
           margenTotal += (venta - coste) / venta;
           contadorMargen++;
         }
         let alertClass = '', alertLabel = '';
-        if (ventasCliente === 0)      { alertClass = 'sinventas'; alertLabel = '❌ SIN VENTAS'; }
+        if (ventasCliente === 0)      { alertClass = 'sinventas'; alertLabel = '❌ SIN VENTAS'; statusCount.sinventas++; }
         else if (stock === 0) {
           if (ventasCliente >= 10)    { alertClass = 'urgente'; alertLabel = '?? URGENTE'; }
           else if (ventasCliente >= 3){ alertClass = 'critico'; alertLabel = '? CRÍTICO'; }
           else                        { alertClass = 'bajo'; alertLabel = '? BAJO STOCK'; }
         }
-        else if (stock < 3 && ventasCliente > 0) { alertClass = 'bajo'; alertLabel = '? BAJO STOCK'; }
+        else if (stock < 3 && ventasCliente > 0) { alertClass = 'bajo'; alertLabel = '? BAJO STOCK'; statusCount.bajo++; }
         else if (ventasCliente / (stock||1) > 3) { alertClass = 'optimo'; alertLabel = '✔️ ÓPTIMO'; }
         else if (ventasCliente < 2)              { alertClass = 'lento'; alertLabel = 'ℹ️ LENTO'; }
         else                                     { alertClass = 'optimo'; alertLabel = '✔️ ÓPTIMO'; }
@@ -149,30 +349,96 @@
         cuota: ventasTotalesComp ? (ventasNeto / ventasTotalesComp * 100).toFixed(2) + "%" : "N/A",
         margen: contadorMargen ? (margenTotal / contadorMargen * 100).toFixed(2) + "%" : "N/A"
       };
-      // Mostrar KPIs
       document.getElementById('kpisSection').style.display = '';
       document.getElementById('kpis').innerHTML =
-        `<div><b>Cliente:</b> ${clienteCodigo} - ${clienteNombre}</div>
-         <div><b>Referencias:</b> ${kpis.totalRefs}</div>
-         <div><b>Valor Inventario:</b> ${kpis.valorInventario.toLocaleString("es-ES", { minimumFractionDigits: 2 })}</div>
-         <div><b>Ventas Neto:</b> ${kpis.ventasNeto.toLocaleString("es-ES", { minimumFractionDigits: 2 })}</div>
-         <div><b>Stock Muerto:</b> ${kpis.stockMuerto}</div>
-         <div><b>Stock Crítico:</b> ${kpis.stockCritico}</div>
-         <div><b>Cuota vs Mercado:</b> ${kpis.cuota}</div>
-         <div><b>Margen Promedio:</b> ${kpis.margen}</div>`;
-      // Mostrar Recomendaciones
+        `<span><b>Cliente:</b> ${clienteSeleccionado} - ${nombreCliente}</span>
+         <span><b>Referencias:</b> ${kpis.totalRefs}</span>
+         <span><b>Valor Inventario:</b> ${kpis.valorInventario.toLocaleString("es-ES", { minimumFractionDigits: 2 })}</span>
+         <span><b>Ventas Neto:</b> ${kpis.ventasNeto.toLocaleString("es-ES", { minimumFractionDigits: 2 })}</span>
+         <span><b>Stock Muerto:</b> ${kpis.stockMuerto}</span>
+         <span><b>Stock Crítico:</b> ${kpis.stockCritico}</span>
+         <span><b>Cuota vs Mercado:</b> ${kpis.cuota}</span>
+         <span><b>Margen Promedio:</b> ${kpis.margen}</span>`;
       document.getElementById('recsSection').style.display = '';
       let tbody = document.getElementById('tablaRecs').querySelector('tbody');
       tbody.innerHTML = '';
       recs.forEach(r => {
         let tr = document.createElement('tr');
-        tr.innerHTML = `<td>${r.cod}</td><td>${r.desc}</td><td>${r.stock}</td>
+        tr.innerHTML = `<td>${r.cod}</td><td>${r.desc || ''}</td><td>${r.stock}</td>
           <td>${r.coste}</td><td>${r.venta}</td><td>${r.ventasCliente}</td>
           <td>${r.ventasMercado}</td>
           <td><span class="alert ${r.alertClass}">${r.alertLabel}</span></td>`;
         tbody.appendChild(tr);
       });
-    };
+      // === Gráficos ===
+      document.getElementById('chartsRow').style.display = '';
+      if (window.chartInv) window.chartInv.destroy();
+      if (window.chartVen) window.chartVen.destroy();
+      if (window.chartMar) window.chartMar.destroy();
+      // Inventario Pie
+      window.chartInv = new Chart(document.getElementById('chartInventario').getContext('2d'), {
+        type: 'pie',
+        data: {
+          labels: ['Sano', 'Crítico', 'Muerto', 'Bajo', 'Sin ventas'],
+          datasets: [{ data: [
+            statusCount.sano, statusCount.critico, statusCount.muerto, statusCount.bajo, statusCount.sinventas
+          ], backgroundColor: ['#64ff64','#ffbc64','#ff6464','#ffff64','#b4b4b4'] }]
+        },
+        options: { plugins:{legend:{position:'bottom'}}, responsive:false, maintainAspectRatio:false }
+      });
+      // Ventas Bar
+      window.chartVen = new Chart(document.getElementById('chartVentas').getContext('2d'), {
+        type: 'bar',
+        data: {
+          labels: Array.from({length: Math.min(ventasArray.length,10)}, (_,i)=>'Ref.'+(i+1)),
+          datasets: [{ label:"Ventas por referencia (Top 10)", data: ventasArray.slice(0,10), backgroundColor:'#446ccc' }]
+        },
+        options: { plugins:{legend:{display:false}}, responsive:false, maintainAspectRatio:false }
+      });
+      // Margen Promedio
+      window.chartMar = new Chart(document.getElementById('chartMargen').getContext('2d'), {
+        type: 'doughnut',
+        data: {
+          labels: ['Margen Promedio (%)','Resto'],
+          datasets: [{ data: [parseFloat(kpis.margen)||0, 100-(parseFloat(kpis.margen)||0)],
+            backgroundColor:['#446ccc','#e9eaf5']
+          }]
+        },
+        options: { plugins:{legend:{position:'bottom'}}, cutout:'70%', responsive:false, maintainAspectRatio:false }
+      });
+    }
+
+    function generarReporte() {
+      // Exportar a Excel
+      const wb = XLSX.utils.book_new();
+      // KPIs
+      const kpis = [[
+        "Cliente", clienteSeleccionado + " - " + nombreCliente,
+        "Referencias", document.querySelector("#kpis span:nth-child(2)").textContent.split(':')[1].trim(),
+        "Valor Inventario", document.querySelector("#kpis span:nth-child(3)").textContent.split(':')[1].trim(),
+        "Ventas Neto", document.querySelector("#kpis span:nth-child(4)").textContent.split(':')[1].trim(),
+        "Stock Muerto", document.querySelector("#kpis span:nth-child(5)").textContent.split(':')[1].trim(),
+        "Stock Crítico", document.querySelector("#kpis span:nth-child(6)").textContent.split(':')[1].trim(),
+        "Cuota vs Mercado", document.querySelector("#kpis span:nth-child(7)").textContent.split(':')[1].trim(),
+        "Margen Promedio", document.querySelector("#kpis span:nth-child(8)").textContent.split(':')[1].trim()
+      ]];
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(kpis), "KPIs");
+      // Recomendaciones
+      const rows = Array.from(document.querySelectorAll("#tablaRecs tbody tr")).map(tr =>
+        Array.from(tr.children).map(td => td.innerText));
+      rows.unshift(["Código","Descripción","Stock","Coste","Venta","Ventas Cliente","Ventas Mercado","Recomendación"]);
+      XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(rows), "Recomendaciones");
+      XLSX.writeFile(wb, `Reporte_${clienteSeleccionado}_${nombreCliente.replace(/\s+/g,'_')}.xlsx`);
+    }
+
+    function salir() {
+      if (confirm("¿Seguro que quieres salir y cerrar sesión?")) {
+        perfil = null;
+        document.getElementById('registerContainer').style.display = '';
+        document.getElementById('userformContainer').style.display = 'none';
+        limpiarFormulario();
+      }
+    }
   </script>
 </body>
 </html>
