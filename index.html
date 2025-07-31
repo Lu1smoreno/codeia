@@ -189,22 +189,23 @@
       document.getElementById('userDropdown').classList.toggle('open');
     }
 
-    function buscarCliente() {
-      const code = document.getElementById('codigoCliente').value.trim();
-      if (!code) {
-        mostrarMsg('labelCliente', 'Introduce el código del cliente', 'waiting');
-        return;
-      }
-      if (clientesBD[code]) {
-        clienteSeleccionado = code;
-        nombreCliente = clientesBD[code];
-        mostrarMsg('labelCliente', "Cliente Seleccionado: " + nombreCliente, 'imported');
-        habilitarBotones(true);
-      } else {
-        mostrarMsg('labelCliente', "Cliente no encontrado.", 'error');
-        habilitarBotones(false);
-      }
-    }
+ function buscarCliente() {
+  const code = document.getElementById('codigoCliente').value.trim();
+  if (!code) {
+    mostrarMsg('labelCliente', 'Introduce el código del cliente', 'waiting');
+    habilitarBotones(false);
+    return;
+  }
+  clienteSeleccionado = code;
+  if (clientesBD[code]) {
+    nombreCliente = clientesBD[code];
+    mostrarMsg('labelCliente', "Cliente Seleccionado: " + nombreCliente, 'imported');
+  } else {
+    nombreCliente = "Cliente no registrado";
+    mostrarMsg('labelCliente', "Código de cliente: " + code, 'imported');
+  }
+  habilitarBotones(true);
+}
 
     function habilitarBotones(activo) {
       document.getElementById('btnImportInv').disabled = !activo;
