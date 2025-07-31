@@ -1,5 +1,3 @@
-MODULO1
-
 Option Explicit
 
 ' Variables globales
@@ -8,216 +6,212 @@ Public nombreCliente As String
 Public rutaInventario As String
 Public rutaVentas As String
 Public rutaComparativa As String
-Public rutaPreciosNetos As String
 
-Private listaClientes As Object ' Objeto Dictionary para almacenar la lista de clientes
-
-' ##### Inicialización del Sistema #####
+Private listaClientes As Object
 
 Sub InicializarSistema()
     Call InicializarListaClientes
     Call ConfigurarHojas
+    Call LimpiarVariables
 End Sub
 
 Private Sub InicializarListaClientes()
     Set listaClientes = CreateObject("Scripting.Dictionary")
-    listaClientes.CompareMode = TextCompare
-    
-    ' Añadir clientes al diccionario
-  
-  listaClientes.Add "25351", "Recambios Barreiro, S.L.U."
-  listaClientes.Add "25355", "TOT Frens, S.L."
-  listaClientes.Add "26846", "Centrauto Componentes Auto, Lda."
-  listaClientes.Add "29211", "URO Vehículos Especiales, S.A."
-  listaClientes.Add "31485", "Bragalis Peças e Acess. P/"
-  listaClientes.Add "32738", "GRUPO PEÑA AUTOMOCIÓN, S.L."
-  listaClientes.Add "32753", "Recambios Y Accesorios Gaudi, S.L."
-  listaClientes.Add "34169", "EMBRAGUES PEDREÑO, S.L."
-  listaClientes.Add "44571", "HIDRAULICOS Y FRENOS, S.A."
-  listaClientes.Add "48647", "RECANVIS NOMAR, S.L."
-  listaClientes.Add "53292", "REPUESTOS ROMA, S.L."
-  listaClientes.Add "53447", "REPUESTOS SERCA, S.L.U."
-  listaClientes.Add "53454", "RECAMBIOS PARA CAMION Y BUS, S.L."
-  listaClientes.Add "53553", "RECAMBIOS PACO, S.L."
-  listaClientes.Add "54261", "ASYSUM, S.A."
-  listaClientes.Add "54729", "Navarro Hnos. Almeria, S.L."
-  listaClientes.Add "57804", "Innovadora de Recambios S.L."
-  listaClientes.Add "57823", "ASOCIACION DE RECAMBISTAS 98 S.L."
-  listaClientes.Add "57902", "Autocamión Norte S.L."
-  listaClientes.Add "58186", "Sofrapa Automoveis S.A."
-  listaClientes.Add "59366", "Repuestos Eusko-Auto"
-  listaClientes.Add "59371", "Auto Recambios Vera S.L."
-  listaClientes.Add "59428", "Jesus Díez, S.A."
-  listaClientes.Add "59631", "Recambios Ibiza S.A."
-  listaClientes.Add "61532", "AD Bosch Recanvis, S.L.U."
-  listaClientes.Add "61838", "CIVIPARTS ESPAÑA, S.L."
-  listaClientes.Add "70434", "Krautli Portugal"
-  listaClientes.Add "77564", "Grupo de Recambios Amador, S.L."
-  listaClientes.Add "77565", "Grupo Recambios G.R.A.Tenerife,S.L."
-  listaClientes.Add "78255", "Eurorecambios del Camión, S.L."
-  listaClientes.Add "78480", "Interlleida Motor, S.L."
-  listaClientes.Add "78603", "Grovisa, S.A."
-  listaClientes.Add "78853", "Comercial Oroz Tudela, S.L."
-  listaClientes.Add "81536", "Industriales Valencia, S.L."
-  listaClientes.Add "81896", "Equipamovil, S.L."
-  listaClientes.Add "82747", "Europart Portugal, S.A."
-  listaClientes.Add "83186", "Grupauto Murcia, S.L."
-  listaClientes.Add "84461", "Intern. Delivery Parts 2008, S.L.U"
-  listaClientes.Add "85293", "Selling Motors, S.L."
-  listaClientes.Add "85576", "Recambios Meres, S.L."
-  listaClientes.Add "85740", "Repuestos Hubri, S.L."
-  listaClientes.Add "90574", "Recambios Industriales Garmo, S.L."
-  listaClientes.Add "90681", "Luis Moleon Recambios, S.L."
-  listaClientes.Add "93002", "M COUTINHO PEÇAS E REP AUT, S.A."
-  listaClientes.Add "93023", "Veinsur, S.A.U."
-  listaClientes.Add "94691", "AD TRANSCOSE SOLUCIONS, S.L."
-  listaClientes.Add "95282", "AD Siro Automoción, S.L."
-  listaClientes.Add "95332", "COMERCIAL BOIZ, S.A."
-  listaClientes.Add "95437", "VISOPARTS -ACESS SEMI-REBOQ. Lda"
-  listaClientes.Add "95464", "AD LEVANTE PARTS, S.L."
-  listaClientes.Add "95496", "SGP-Global Parts, Lda."
-  listaClientes.Add "96075", "Motorbus, Reparaçoes e Peças Auto Lda."
-  listaClientes.Add "96254", "Ad Marina Automotive 2017, S.L.U."
-  listaClientes.Add "96420", "AD Freco Parts, S.L."
-  listaClientes.Add "96548", "HBC II - Peças Auto, Lda."
-  listaClientes.Add "97297", "AD SALAS AUTOMOCION"
-  listaClientes.Add "97391", "RECALVI MEDITERRANEA, S.L."
-  listaClientes.Add "97502", "CREATE BUSINESS IBERIA AFTERMARKET, S.L."
-  listaClientes.Add "97547", "Recalvi Norte, S.A."
-  listaClientes.Add "97589", "Recambios Colón Catarroja, S.A."
-  listaClientes.Add "97721", "PSAG Automobiles Comercial Espana,"
-  listaClientes.Add "98278", "AUTO RECAMBIOS PENALVER, S.L.U."
-  listaClientes.Add "98431", "SELLING MOTORS CENTRO, S.L."
-  listaClientes.Add "98600", "Repuestos Guadiana, S.L."
-  listaClientes.Add "98770", "GRUPAUTO SEVILLA"
-  listaClientes.Add "98822", "AD REGUEIRA GIJON, S.L."
-  listaClientes.Add "99176", "AUTO PARTS PLUS, S.L."
-  listaClientes.Add "99486", "Portomotor, S.L.U."
-  listaClientes.Add "99506", "Ad Recambios Extremadura"
-  listaClientes.Add "99507", "Ad Recambios Extremadura"
-  listaClientes.Add "99508", "Ad Recambios Extremadura"
-  listaClientes.Add "99509", "Ad Recambios Extremadura"
-  listaClientes.Add "99510", "Ad Recambios Extremadura"
-  listaClientes.Add "99512", "Ad Recambios Extremadura"
-  listaClientes.Add "99513", "Ad Recambios Extremadura"
-  listaClientes.Add "99514", "Ad Recambios Extremadura"
-  listaClientes.Add "99972", "DAVA, S.A."
-  listaClientes.Add "100349", "AZUR GLOBAL BUSINESS, S.L."
-  listaClientes.Add "100468", "NEWONEDRIVE COMERCIO DE PECAS"
-  listaClientes.Add "100714", "Recalvi Canarias, S.L."
-  listaClientes.Add "101381", "Euma Parts, S.L.U."
-  listaClientes.Add "2000595", "CIVIPARTES & EUROPA"
-  listaClientes.Add "2002101", "BURUAGA, S.L."
-  listaClientes.Add "2005021", "RECAMBIOS INFRA, S.L."
-  listaClientes.Add "2005022", "Vilarmau I Freixa, S.L."
-  listaClientes.Add "2005031", "FRENBUR, S.L."
-  listaClientes.Add "2005038", "FRENOS HERMANOS MARTINEZ, S.L."
-  listaClientes.Add "2005065", "AVENMAR, S.A."
-  listaClientes.Add "2005067", "ARAVI S.A."
-  listaClientes.Add "2005074", "RECAMBIOS GRAN VIA, S.A."
-  listaClientes.Add "2005076", "REPUESTOS SAN EMETERIO, S.L."
-  listaClientes.Add "2005077", "Hermanos Gómez Pleguezuelos, S.L."
-  listaClientes.Add "2005078", "AUTO RECAMBIOS LOMEÑA, S.L."
-  listaClientes.Add "2005081", "Frenos Y Embragues Valsan, S.L."
-  listaClientes.Add "2005088", "Comercial Navarro Hermanos, S.A."
-  listaClientes.Add "2005093", "AUTO RECAMBIOS GIJON, S.A.L."
-  listaClientes.Add "2005094", "REGUEIRA ASTURIAS, S.L."
-  listaClientes.Add "2005097", "SUREYA, S.L."
-  listaClientes.Add "2005103", "REPUESTOS DORAL, S.L."
-  listaClientes.Add "2005108", "TVH Parts España, S.A."
-  listaClientes.Add "2005114", "RECAMBIOS INDUSTRIALES MOLEON, S.A."
-  listaClientes.Add "2005119", "AD GRUPO REGUEIRA, S.A."
-  listaClientes.Add "2005121", "VIUDA DE EGIDO E HIJOS, S.L."
-  listaClientes.Add "2005124", "Vemare, S.L.U."
-  listaClientes.Add "2005126", "Regenauto, S.A."
-  listaClientes.Add "2005132", "MAYOR RECAMBIOS, S.L."
-  listaClientes.Add "2005141", "RS TURIA, S.L."
-  listaClientes.Add "2005143", "Repuestos Posada, S.L."
-  listaClientes.Add "2005145", "RECAMBIOS MORAL, S.L."
-  listaClientes.Add "2005147", "AUTO INDUSTRIAL BASCONIA, S.A."
-  listaClientes.Add "2005148", "RECATRANS, S.L."
-  listaClientes.Add "2005157", "AUTO RECAMBIOS VILBER, S.L."
-  listaClientes.Add "2005162", "CECAUTO SUR, S.A."
-  listaClientes.Add "2005163", "CECAUTO LEVANTE, S.A."
-  listaClientes.Add "2005174", "AD REGUEIRA ASOCIADOS, S.L."
-  listaClientes.Add "2005183", "Automocion Oryx Parts, S.L."
-  listaClientes.Add "2005186", "A.D. Cantabria, S.A."
-  listaClientes.Add "2005195", "CECAUTO CANARIAS S.A."
-  listaClientes.Add "2005197", "RECAMBIOS BALSA HERMANOS, S.L."
-  listaClientes.Add "2005198", "AUTORECAMBIOS VICENTE, S.A."
-  listaClientes.Add "2005199", "SILVESTRE AUTOPARTS, S.L."
-  listaClientes.Add "2005201", "RECAMBIOS FRAIN, S.L."
-  listaClientes.Add "2005203", "CECAUTO, S.A."
-  listaClientes.Add "2005209", "CECAUTO NORTE, S.A."
-  listaClientes.Add "2005210", "ERESA AUTOCLIMA, S.L."
-  listaClientes.Add "2005269", "Recalvi, S.L."
-  listaClientes.Add "2005308", "Grupauto, S.A."
-  listaClientes.Add "2005313", "Moraleda Recambios Agricolas, S.L."
-  listaClientes.Add "2005336", "ERESA AUTOMOCION, S.L."
-  listaClientes.Add "2005340", "GSAUTO RECAMBIOS, S.L."
-  listaClientes.Add "2005341", "SILVESTRE AUTODISTRIBUCION, S.L."
-  listaClientes.Add "2005346", "UNION RECAMBISTAS V.I., S.L."
-  listaClientes.Add "2005382", "SACORAUTO, S.A."
-  listaClientes.Add "2005408", "Grupauto Albacete, S.L."
-  listaClientes.Add "2005410", "ACC. Y RECAMBIOS LOS JUANES, S.A."
-  listaClientes.Add "2005419", "Rep. Gali Veh. Ind., S.L."
-  listaClientes.Add "2005424", "Comercial Dinamic's, S.L."
-  listaClientes.Add "2005430", "Recambios Reynasa"
-  listaClientes.Add "2005433", "REPUESTOS VICENTE, S.L."
-  listaClientes.Add "2005434", "Recambios Ochoa, S.L."
-  listaClientes.Add "2005436", "RECAMBIOS AICRAG, S.A."
-  listaClientes.Add "2005437", "AUTO RECAMBIOS SEGORBE, S.L."
-  listaClientes.Add "2005443", "Auto Rec. FCO. Cerda Perales, S.L."
-  listaClientes.Add "2005461", "Recanvis Penedes, S.L."
-  listaClientes.Add "2005471", "AD MASANÉS, S.A."
-  listaClientes.Add "2005480", "Recambios del Olmo, S.L."
-  listaClientes.Add "2005496", "RECAMBIOS REYMO, S.L."
-  listaClientes.Add "2005501", "Jiménez Maña Recambios, S.L.U."
-  listaClientes.Add "2005505", "Recambios Asturias, S.L.U."
-  listaClientes.Add "2005506", "RECAMBIOS PACO DE SORIA, S.L."
-  listaClientes.Add "2005544", "Recambios Internacionales, S.A."
-  listaClientes.Add "2005548", "REPUESTOS REAL, S.L."
-  listaClientes.Add "2005557", "CECAUTO LEVANTE, S.A. (ALBACETE)"
-  listaClientes.Add "2005558", "CECAUTO MLG, S.A."
-  listaClientes.Add "2005559", "Recambios Calfer, S.L."
-  listaClientes.Add "2005579", "MAYOR CATALANA, S.L."
-  listaClientes.Add "2005608", "Almacen de Recambios Paher, S.A."
-  listaClientes.Add "2005613", "CECAUTO CENTRO, S.A."
-  listaClientes.Add "2005874", "REPUESTOS URUGUAY, S.A."
-  listaClientes.Add "2005878", "Auteide S.A."
-  listaClientes.Add "2005913", "SOULIMA COMERCIO DE PEÇAS, S.A."
-  listaClientes.Add "2005915", "AGROVIMAIA LDA."
-  listaClientes.Add "2005916", "AUTOZITANIA-ACCESORIOS E"
-  listaClientes.Add "2005918", "AUTO-DELTA LDA."
-  listaClientes.Add "2005920", "PEÇAOESTE LDA."
-  listaClientes.Add "2005922", "Fimag, Imp E Com de Accesor, Lda."
-  listaClientes.Add "2005927", "Tractorminho-Dist. Peças E Material"
-  listaClientes.Add "2005929", "ATLANTIC PARTS"
-  listaClientes.Add "2005934", "Create Business, S.A."
-  listaClientes.Add "2005935", "AUTO SILVA ACESSORIOS, S.A."
-  listaClientes.Add "102682", "Kramp Groep B.V."
-  listaClientes.Add "102287", "Recambios Eurotruck, S.L.L."
-  listaClientes.Add "102846", "EUROPEÇAS, S.A."
-  listaClientes.Add "103809", "Especialidades Electricas Lausan S."
-  listaClientes.Add "101828", "EUMA PRO 2020, S.L.U."
-  listaClientes.Add "104736", "STELLANTIS ESPAÑA, S.L."
-  listaClientes.Add "44998", "RECAMBIOS AUTODIESEL"
-  listaClientes.Add "104864", "LOGIPRO PARTS S.L."
-  listaClientes.Add "104926", "RSE Calahorra, S.L."
-  listaClientes.Add "104989", "DIPART"
-  listaClientes.Add "105178", "Automocion Sostenible T+C, S.L."
-  listaClientes.Add "78783", "Suvima, S.A."
-  listaClientes.Add "106723", "Alecarpeças Acessorios de Automoveis S.A."
-  listaClientes.Add "84813", "Alliance Automotive Procurement Ltd"
-  listaClientes.Add "107294", "Auto Comercio Salduba, S.L."
-  listaClientes.Add "111451", "Recalvi Parts, S.L.U."
-  listaClientes.Add "112167", "Recalvi Parts, S.L.U."
-  listaClientes.Add "109968", "Bomboleo, Lda."
-  listaClientes.Add "112842", "CHAPARRO AGRICOLA E INDISTRIAL, S.L"
-  listaClientes.Add "109956", "Global Parts Iberica, S.L."
-  listaClientes.Add "113038", "Bomboleo, Lda."
-  listaClientes.Add "113368", "AMA Cafiatra Portugal, Lda."
-  listaClientes.Add "113389", "RECALVI RETAIL, S.A."
+    listaClientes.CompareMode = vbTextCompare
+    ' --- Listado COMPLETO de clientes, copia y pega tus clientes aquí ---
+    listaClientes.Add "25351", "Recambios Barreiro, S.L.U."
+    listaClientes.Add "25355", "TOT Frens, S.L."
+    listaClientes.Add "26846", "Centrauto Componentes Auto, Lda."
+    listaClientes.Add "29211", "URO Vehículos Especiales, S.A."
+    listaClientes.Add "31485", "Bragalis Peças e Acess. P/"
+    listaClientes.Add "32738", "GRUPO PEÑA AUTOMOCIÓN, S.L."
+    listaClientes.Add "32753", "Recambios Y Accesorios Gaudi, S.L."
+    listaClientes.Add "34169", "EMBRAGUES PEDREÑO, S.L."
+    listaClientes.Add "44571", "HIDRAULICOS Y FRENOS, S.A."
+    listaClientes.Add "48647", "RECANVIS NOMAR, S.L."
+    listaClientes.Add "53292", "REPUESTOS ROMA, S.L."
+    listaClientes.Add "53447", "REPUESTOS SERCA, S.L.U."
+    listaClientes.Add "53454", "RECAMBIOS PARA CAMION Y BUS, S.L."
+    listaClientes.Add "53553", "RECAMBIOS PACO, S.L."
+    listaClientes.Add "54261", "ASYSUM, S.A."
+    listaClientes.Add "54729", "Navarro Hnos. Almeria, S.L."
+    listaClientes.Add "57804", "Innovadora de Recambios S.L."
+    listaClientes.Add "57823", "ASOCIACION DE RECAMBISTAS 98 S.L."
+    listaClientes.Add "57902", "Autocamión Norte S.L."
+    listaClientes.Add "58186", "Sofrapa Automoveis S.A."
+    listaClientes.Add "59366", "Repuestos Eusko-Auto"
+    listaClientes.Add "59371", "Auto Recambios Vera S.L."
+    listaClientes.Add "59428", "Jesus Díez, S.A."
+    listaClientes.Add "59631", "Recambios Ibiza S.A."
+    listaClientes.Add "61532", "AD Bosch Recanvis, S.L.U."
+    listaClientes.Add "61838", "CIVIPARTS ESPAÑA, S.L."
+    listaClientes.Add "70434", "Krautli Portugal"
+    listaClientes.Add "77564", "Grupo de Recambios Amador, S.L."
+    listaClientes.Add "77565", "Grupo Recambios G.R.A.Tenerife,S.L."
+    listaClientes.Add "78255", "Eurorecambios del Camión, S.L."
+    listaClientes.Add "78480", "Interlleida Motor, S.L."
+    listaClientes.Add "78603", "Grovisa, S.A."
+    listaClientes.Add "78853", "Comercial Oroz Tudela, S.L."
+    listaClientes.Add "81536", "Industriales Valencia, S.L."
+    listaClientes.Add "81896", "Equipamovil, S.L."
+    listaClientes.Add "82747", "Europart Portugal, S.A."
+    listaClientes.Add "83186", "Grupauto Murcia, S.L."
+    listaClientes.Add "84461", "Intern. Delivery Parts 2008, S.L.U"
+    listaClientes.Add "85293", "Selling Motors, S.L."
+    listaClientes.Add "85576", "Recambios Meres, S.L."
+    listaClientes.Add "85740", "Repuestos Hubri, S.L."
+    listaClientes.Add "90574", "Recambios Industriales Garmo, S.L."
+    listaClientes.Add "90681", "Luis Moleon Recambios, S.L."
+    listaClientes.Add "93002", "M COUTINHO PEÇAS E REP AUT, S.A."
+    listaClientes.Add "93023", "Veinsur, S.A.U."
+    listaClientes.Add "94691", "AD TRANSCOSE SOLUCIONS, S.L."
+    listaClientes.Add "95282", "AD Siro Automoción, S.L."
+    listaClientes.Add "95332", "COMERCIAL BOIZ, S.A."
+    listaClientes.Add "95437", "VISOPARTS -ACESS SEMI-REBOQ. Lda"
+    listaClientes.Add "95464", "AD LEVANTE PARTS, S.L."
+    listaClientes.Add "95496", "SGP-Global Parts, Lda."
+    listaClientes.Add "96075", "Motorbus, Reparaçoes e Peças Auto Lda."
+    listaClientes.Add "96254", "Ad Marina Automotive 2017, S.L.U."
+    listaClientes.Add "96420", "AD Freco Parts, S.L."
+    listaClientes.Add "96548", "HBC II - Peças Auto, Lda."
+    listaClientes.Add "97297", "AD SALAS AUTOMOCION"
+    listaClientes.Add "97391", "RECALVI MEDITERRANEA, S.L."
+    listaClientes.Add "97502", "CREATE BUSINESS IBERIA AFTERMARKET, S.L."
+    listaClientes.Add "97547", "Recalvi Norte, S.A."
+    listaClientes.Add "97589", "Recambios Colón Catarroja, S.A."
+    listaClientes.Add "97721", "PSAG Automobiles Comercial Espana,"
+    listaClientes.Add "98278", "AUTO RECAMBIOS PENALVER, S.L.U."
+    listaClientes.Add "98431", "SELLING MOTORS CENTRO, S.L."
+    listaClientes.Add "98600", "Repuestos Guadiana, S.L."
+    listaClientes.Add "98770", "GRUPAUTO SEVILLA"
+    listaClientes.Add "98822", "AD REGUEIRA GIJON, S.L."
+    listaClientes.Add "99176", "AUTO PARTS PLUS, S.L."
+    listaClientes.Add "99486", "Portomotor, S.L.U."
+    listaClientes.Add "99506", "Ad Recambios Extremadura"
+    listaClientes.Add "99507", "Ad Recambios Extremadura"
+    listaClientes.Add "99508", "Ad Recambios Extremadura"
+    listaClientes.Add "99509", "Ad Recambios Extremadura"
+    listaClientes.Add "99510", "Ad Recambios Extremadura"
+    listaClientes.Add "99512", "Ad Recambios Extremadura"
+    listaClientes.Add "99513", "Ad Recambios Extremadura"
+    listaClientes.Add "99514", "Ad Recambios Extremadura"
+    listaClientes.Add "99972", "DAVA, S.A."
+    listaClientes.Add "100349", "AZUR GLOBAL BUSINESS, S.L."
+    listaClientes.Add "100468", "NEWONEDRIVE COMERCIO DE PECAS"
+    listaClientes.Add "100714", "Recalvi Canarias, S.L."
+    listaClientes.Add "101381", "Euma Parts, S.L.U."
+    listaClientes.Add "2000595", "CIVIPARTES & EUROPA"
+    listaClientes.Add "2002101", "BURUAGA, S.L."
+    listaClientes.Add "2005021", "RECAMBIOS INFRA, S.L."
+    listaClientes.Add "2005022", "Vilarmau I Freixa, S.L."
+    listaClientes.Add "2005031", "FRENBUR, S.L."
+    listaClientes.Add "2005038", "FRENOS HERMANOS MARTINEZ, S.L."
+    listaClientes.Add "2005065", "AVENMAR, S.A."
+    listaClientes.Add "2005067", "ARAVI S.A."
+    listaClientes.Add "2005074", "RECAMBIOS GRAN VIA, S.A."
+    listaClientes.Add "2005076", "REPUESTOS SAN EMETERIO, S.L."
+    listaClientes.Add "2005077", "Hermanos Gómez Pleguezuelos, S.L."
+    listaClientes.Add "2005078", "AUTO RECAMBIOS LOMEÑA, S.L."
+    listaClientes.Add "2005081", "Frenos Y Embragues Valsan, S.L."
+    listaClientes.Add "2005088", "Comercial Navarro Hermanos, S.A."
+    listaClientes.Add "2005093", "AUTO RECAMBIOS GIJON, S.A.L."
+    listaClientes.Add "2005094", "REGUEIRA ASTURIAS, S.L."
+    listaClientes.Add "2005097", "SUREYA, S.L."
+    listaClientes.Add "2005103", "REPUESTOS DORAL, S.L."
+    listaClientes.Add "2005108", "TVH Parts España, S.A."
+    listaClientes.Add "2005114", "RECAMBIOS INDUSTRIALES MOLEON, S.A."
+    listaClientes.Add "2005119", "AD GRUPO REGUEIRA, S.A."
+    listaClientes.Add "2005121", "VIUDA DE EGIDO E HIJOS, S.L."
+    listaClientes.Add "2005124", "Vemare, S.L.U."
+    listaClientes.Add "2005126", "Regenauto, S.A."
+    listaClientes.Add "2005132", "MAYOR RECAMBIOS, S.L."
+    listaClientes.Add "2005141", "RS TURIA, S.L."
+    listaClientes.Add "2005143", "Repuestos Posada, S.L."
+    listaClientes.Add "2005145", "RECAMBIOS MORAL, S.L."
+    listaClientes.Add "2005147", "AUTO INDUSTRIAL BASCONIA, S.A."
+    listaClientes.Add "2005148", "RECATRANS, S.L."
+    listaClientes.Add "2005157", "AUTO RECAMBIOS VILBER, S.L."
+    listaClientes.Add "2005162", "CECAUTO SUR, S.A."
+    listaClientes.Add "2005163", "CECAUTO LEVANTE, S.A."
+    listaClientes.Add "2005174", "AD REGUEIRA ASOCIADOS, S.L."
+    listaClientes.Add "2005183", "Automocion Oryx Parts, S.L."
+    listaClientes.Add "2005186", "A.D. Cantabria, S.A."
+    listaClientes.Add "2005195", "CECAUTO CANARIAS S.A."
+    listaClientes.Add "2005197", "RECAMBIOS BALSA HERMANOS, S.L."
+    listaClientes.Add "2005198", "AUTORECAMBIOS VICENTE, S.A."
+    listaClientes.Add "2005199", "SILVESTRE AUTOPARTS, S.L."
+    listaClientes.Add "2005201", "RECAMBIOS FRAIN, S.L."
+    listaClientes.Add "2005203", "CECAUTO, S.A."
+    listaClientes.Add "2005209", "CECAUTO NORTE, S.A."
+    listaClientes.Add "2005210", "ERESA AUTOCLIMA, S.L."
+    listaClientes.Add "2005269", "Recalvi, S.L."
+    listaClientes.Add "2005308", "Grupauto, S.A."
+    listaClientes.Add "2005313", "Moraleda Recambios Agricolas, S.L."
+    listaClientes.Add "2005336", "ERESA AUTOMOCION, S.L."
+    listaClientes.Add "2005340", "GSAUTO RECAMBIOS, S.L."
+    listaClientes.Add "2005341", "SILVESTRE AUTODISTRIBUCION, S.L."
+    listaClientes.Add "2005346", "UNION RECAMBISTAS V.I., S.L."
+    listaClientes.Add "2005382", "SACORAUTO, S.A."
+    listaClientes.Add "2005408", "Grupauto Albacete, S.L."
+    listaClientes.Add "2005410", "ACC. Y RECAMBIOS LOS JUANES, S.A."
+    listaClientes.Add "2005419", "Rep. Gali Veh. Ind., S.L."
+    listaClientes.Add "2005424", "Comercial Dinamic's, S.L."
+    listaClientes.Add "2005430", "Recambios Reynasa"
+    listaClientes.Add "2005433", "REPUESTOS VICENTE, S.L."
+    listaClientes.Add "2005434", "Recambios Ochoa, S.L."
+    listaClientes.Add "2005436", "RECAMBIOS AICRAG, S.A."
+    listaClientes.Add "2005437", "AUTO RECAMBIOS SEGORBE, S.L."
+    listaClientes.Add "2005443", "Auto Rec. FCO. Cerda Perales, S.L."
+    listaClientes.Add "2005461", "Recanvis Penedes, S.L."
+    listaClientes.Add "2005471", "AD MASANÉS, S.A."
+    listaClientes.Add "2005480", "Recambios del Olmo, S.L."
+    listaClientes.Add "2005496", "RECAMBIOS REYMO, S.L."
+    listaClientes.Add "2005501", "Jiménez Maña Recambios, S.L.U."
+    listaClientes.Add "2005505", "Recambios Asturias, S.L.U."
+    listaClientes.Add "2005506", "RECAMBIOS PACO DE SORIA, S.L."
+    listaClientes.Add "2005544", "Recambios Internacionales, S.A."
+    listaClientes.Add "2005548", "REPUESTOS REAL, S.L."
+    listaClientes.Add "2005557", "CECAUTO LEVANTE, S.A. (ALBACETE)"
+    listaClientes.Add "2005558", "CECAUTO MLG, S.A."
+    listaClientes.Add "2005559", "Recambios Calfer, S.L."
+    listaClientes.Add "2005579", "MAYOR CATALANA, S.L."
+    listaClientes.Add "2005608", "Almacen de Recambios Paher, S.A."
+    listaClientes.Add "2005613", "CECAUTO CENTRO, S.A."
+    listaClientes.Add "2005874", "REPUESTOS URUGUAY, S.A."
+    listaClientes.Add "2005878", "Auteide S.A."
+    listaClientes.Add "2005913", "SOULIMA COMERCIO DE PEÇAS, S.A."
+    listaClientes.Add "2005915", "AGROVIMAIA LDA."
+    listaClientes.Add "2005916", "AUTOZITANIA-ACCESORIOS E"
+    listaClientes.Add "2005918", "AUTO-DELTA LDA."
+    listaClientes.Add "2005920", "PEÇAOESTE LDA."
+    listaClientes.Add "2005922", "Fimag, Imp E Com de Accesor, Lda."
+    listaClientes.Add "2005927", "Tractorminho-Dist. Peças E Material"
+    listaClientes.Add "2005929", "ATLANTIC PARTS"
+    listaClientes.Add "2005934", "Create Business, S.A."
+    listaClientes.Add "2005935", "AUTO SILVA ACESSORIOS, S.A."
+    listaClientes.Add "102682", "Kramp Groep B.V."
+    listaClientes.Add "102287", "Recambios Eurotruck, S.L.L."
+    listaClientes.Add "102846", "EUROPEÇAS, S.A."
+    listaClientes.Add "103809", "Especialidades Electricas Lausan S."
+    listaClientes.Add "101828", "EUMA PRO 2020, S.L.U."
+    listaClientes.Add "104736", "STELLANTIS ESPAÑA, S.L."
+    listaClientes.Add "44998", "RECAMBIOS AUTODIESEL"
+    listaClientes.Add "104864", "LOGIPRO PARTS S.L."
+    listaClientes.Add "104926", "RSE Calahorra, S.L."
+    listaClientes.Add "104989", "DIPART"
+    listaClientes.Add "105178", "Automocion Sostenible T+C, S.L."
+    listaClientes.Add "78783", "Suvima, S.A."
+    listaClientes.Add "106723", "Alecarpeças Acessorios de Automoveis S.A."
+    listaClientes.Add "84813", "Alliance Automotive Procurement Ltd"
+    listaClientes.Add "107294", "Auto Comercio Salduba, S.L."
+    listaClientes.Add "111451", "Recalvi Parts, S.L.U."
+    listaClientes.Add "112167", "Recalvi Parts, S.L.U."
+    listaClientes.Add "109968", "Bomboleo, Lda."
+    listaClientes.Add "112842", "CHAPARRO AGRICOLA E INDISTRIAL, S.L"
+    listaClientes.Add "109956", "Global Parts Iberica, S.L."
+    listaClientes.Add "113038", "Bomboleo, Lda."
+    listaClientes.Add "113368", "AMA Cafiatra Portugal, Lda."
+    listaClientes.Add "113389", "RECALVI RETAIL, S.A."
 End Sub
 
 Private Sub ConfigurarHojas()
@@ -226,8 +220,6 @@ Private Sub ConfigurarHojas()
     Call CrearHojaSiNoExiste("Inventario_Temp", True)
     Call CrearHojaSiNoExiste("Ventas_Temp", True)
     Call CrearHojaSiNoExiste("Comparativa_Temp", True)
-    Call CrearHojaSiNoExiste("Precios_Netos", True)
-    Call ConfigurarDashboard
 End Sub
 
 Private Sub CrearHojaSiNoExiste(nombreHoja As String, Optional ocultar As Boolean = False)
@@ -235,70 +227,12 @@ Private Sub CrearHojaSiNoExiste(nombreHoja As String, Optional ocultar As Boolea
     On Error Resume Next
     Set ws = Worksheets(nombreHoja)
     On Error GoTo 0
-    
     If ws Is Nothing Then
         Set ws = Worksheets.Add(After:=Worksheets(Worksheets.Count))
         ws.Name = nombreHoja
         If ocultar Then ws.Visible = xlSheetHidden
     End If
 End Sub
-
-Private Sub ConfigurarDashboard()
-    Dim ws As Worksheet
-    Set ws = Worksheets("Dashboard")
-    
-    ws.Cells.Clear
-    
-    With ws.Range("A1:H1")
-        .Merge
-        .Value = "SISTEMA DE GESTIÓN DE CLIENTES - VERSIÓN MEJORADA"
-        .Font.Size = 18
-        .Font.Bold = True
-        .HorizontalAlignment = xlCenter
-        .Interior.Color = RGB(54, 96, 146)
-        .Font.Color = RGB(255, 255, 255)
-    End With
-    
-    Call FormatearSeccion(ws.Range("A3"), "INFORMACIÓN DEL CLIENTE")
-    ws.Range("A4").Value = "Código Cliente:"
-    ws.Range("A5").Value = "Nombre Cliente:"
-    ws.Range("A6").Value = "Última Actualización:"
-    
-    Call CrearBotonDashboard(ws, "B8", "Seleccionar Cliente", "MostrarFormularioPrincipal")
-    Call CrearBotonDashboard(ws, "D8", "Procesar Todo", "ProcesarDatos")
-    Call CrearBotonDashboard(ws, "F8", "Generar Reporte", "GenerarReporte")
-    
-    Call FormatearSeccion(ws.Range("A10"), "ESTADO DE ARCHIVOS IMPORTADOS")
-    ws.Range("A11:A14").Value = [{"Inventario:"; "Ventas:"; "Comparativa:"; "Precios Netos:"}]
-    
-    Call FormatearSeccion(ws.Range("A16"), "INDICADORES CLAVE")
-    ws.Range("A17:A20").Value = [{"Total Referencias (Inv.):"; "Valor Inventario (Neto):"; "Ventas Período (Neto):"; "Rotación Promedio:"}]
-    
-    Call FormatearSeccion(ws.Range("A22"), "RECOMENDACIONES DE PEDIDO")
-    ws.Columns.AutoFit
-End Sub
-
-Private Sub FormatearSeccion(rango As Range, texto As String)
-    With rango
-        .Value = texto
-        .Font.Bold = True
-        .Interior.Color = RGB(217, 225, 242)
-    End With
-End Sub
-
-Private Sub CrearBotonDashboard(ws As Worksheet, rango As String, texto As String, macro As String)
-    Dim btn As Button
-    On Error Resume Next
-    ws.Buttons(texto).Delete
-    On Error GoTo 0
-    
-    Set btn = ws.Buttons.Add(ws.Range(rango).Left, ws.Range(rango).Top, 120, 30)
-    btn.Caption = texto
-    btn.OnAction = macro
-    btn.Name = texto
-End Sub
-
-' ##### Funciones y Subrutinas Principales del Sistema #####
 
 Public Function BuscarCliente(ByVal codigoCliente As String) As String
     If listaClientes Is Nothing Then Call InicializarListaClientes
@@ -309,88 +243,46 @@ Public Function BuscarCliente(ByVal codigoCliente As String) As String
     End If
 End Function
 
-Public Sub MostrarFormularioPrincipal()
-    On Error GoTo ErrorHandler
-    UserForm1.Show
-    Exit Sub
-ErrorHandler:
-    MsgBox "Error al mostrar el formulario: " & Err.Description, vbCritical
-End Sub
-
-Public Sub ActualizarInfoClienteDashboard(codigoClienteInput As String)
-    Dim ws As Worksheet
-    Set ws = Worksheets("Dashboard")
-    
-    clienteSeleccionado = UCase(Trim(codigoClienteInput))
-    nombreCliente = BuscarCliente(clienteSeleccionado)
-    
-    ws.Range("B4").Value = clienteSeleccionado
-    ws.Range("B5").Value = IIf(nombreCliente <> "", nombreCliente, "Cliente no encontrado.")
-    ws.Range("B6").Value = IIf(nombreCliente <> "", Format(Now, "dd/mm/yyyy hh:mm"), "")
-    
-    If nombreCliente <> "" Then
-        MsgBox "Cliente encontrado: " & nombreCliente, vbInformation
-    Else
-        MsgBox "Cliente no encontrado.", vbExclamation
-    End If
-End Sub
-
-' ##### Subrutinas de Manipulación de Archivos #####
-
-Sub ImportarInventario()
+Public Sub ImportarInventario()
     Call ImportarArchivoGenerico("Inventario")
 End Sub
 
-Sub ImportarVentas()
+Public Sub ImportarVentas()
     Call ImportarArchivoGenerico("Ventas")
 End Sub
 
-Sub ImportarComparativa()
-    Call ImportarArchivoGenerico("Comparativa por zonas")
-End Sub
-
-Sub ImportarPreciosNetos()
-    Call ImportarArchivoGenerico("Precios Netos")
+Public Sub ImportarComparativa()
+    Call ImportarArchivoGenerico("Comparativa")
 End Sub
 
 Private Sub ImportarArchivoGenerico(tipoArchivo As String)
-    Dim rutaArchivo As String
+    Dim rutaArchivo As Variant
     Dim wsDestino As Worksheet
-    
     Select Case tipoArchivo
         Case "Inventario": Set wsDestino = Worksheets("Inventario_Temp"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Inventario")
         Case "Ventas": Set wsDestino = Worksheets("Ventas_Temp"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Ventas")
-        Case "Comparativa por zonas": Set wsDestino = Worksheets("Comparativa_Temp"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Comparativa por Zonas")
-        Case "Precios Netos": Set wsDestino = Worksheets("Precios_Netos"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Precios Netos")
+        Case "Comparativa": Set wsDestino = Worksheets("Comparativa_Temp"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Comparativa")
+        Case Else: MsgBox "Tipo de archivo no reconocido.", vbCritical: Exit Sub
     End Select
-    
-    If rutaArchivo = "False" Then Exit Sub
-    
+    If rutaArchivo = False Then Exit Sub
     Dim wb As Workbook, wsOrigen As Worksheet
     Application.ScreenUpdating = False
     Application.DisplayAlerts = False
-    
     On Error GoTo ErrorHandler
     Set wb = Workbooks.Open(rutaArchivo, ReadOnly:=True, UpdateLinks:=False)
-    Set wsOrigen = wb.ActiveSheet
+    Set wsOrigen = wb.Sheets(1)
     wsDestino.Cells.Clear
     wsOrigen.UsedRange.Copy wsDestino.Range("A1")
     wb.Close False
-    
     Select Case tipoArchivo
         Case "Inventario": rutaInventario = rutaArchivo
         Case "Ventas": rutaVentas = rutaArchivo
-        Case "Comparativa por zonas": rutaComparativa = rutaArchivo
-        Case "Precios Netos": rutaPreciosNetos = rutaArchivo
+        Case "Comparativa": rutaComparativa = rutaArchivo
     End Select
-    
-    Call ActualizarEstadoArchivos
-    
     Application.ScreenUpdating = True
     Application.DisplayAlerts = True
     MsgBox tipoArchivo & " importado correctamente desde: " & rutaArchivo, vbInformation
     Exit Sub
-    
 ErrorHandler:
     Application.ScreenUpdating = True
     Application.DisplayAlerts = True
@@ -398,322 +290,409 @@ ErrorHandler:
     MsgBox "Error al importar " & tipoArchivo & ": " & Err.Description, vbCritical, "Error de Importación"
 End Sub
 
-' ##### Subrutinas de Procesamiento de Datos #####
-
 Public Sub ProcesarDatos()
     If clienteSeleccionado = "" Then
         MsgBox "Seleccione un cliente primero.", vbExclamation
         Exit Sub
     End If
-    
-    If rutaInventario = "" Or rutaVentas = "" Or rutaComparativa = "" Or rutaPreciosNetos = "" Then
+    If rutaInventario = "" Or rutaVentas = "" Or rutaComparativa = "" Then
         MsgBox "Importe todos los archivos necesarios.", vbExclamation
         Exit Sub
     End If
     
-    Application.StatusBar = "Procesando datos para el cliente " & nombreCliente & " (" & clienteSeleccionado & ")..."
-    Application.ScreenUpdating = False
-    
-    Call CalcularKPIs
-    Call GenerarRecomendaciones
-    Call CalcularAnalisisAvanzado
-    Call ActualizarDashboard
-    
-    Application.StatusBar = False
-    Application.ScreenUpdating = True
-    MsgBox "Procesamiento completado y dashboard actualizado.", vbInformation
-End Sub
-
-Private Sub CalcularKPIs()
-    ' Implementar cálculo de KPIs según los datos disponibles
-End Sub
-
-Private Sub GenerarRecomendaciones()
-    ' Implementar lógica para generar recomendaciones de pedido
-End Sub
-
-Private Sub CalcularAnalisisAvanzado()
-    ' Implementar lógica de análisis avanzado
-End Sub
-
-Private Sub ActualizarDashboard()
-    Call ActualizarEstadoArchivos
-    Worksheets("Dashboard").Activate
-End Sub
-
-Private Sub ActualizarEstadoArchivos()
+    ' Rellenar información del cliente en el dashboard
     Dim wsDash As Worksheet
     Set wsDash = Worksheets("Dashboard")
+    wsDash.Range("B4").Value = clienteSeleccionado
+    wsDash.Range("B5").Value = nombreCliente
+    wsDash.Range("B6").Value = Format(Now, "dd/mm/yyyy HH:MM")
     
-    Dim estadoImportado As String: estadoImportado = "? Importado"
-    Dim estadoPendiente As String: estadoPendiente = "? Pendiente"
+    ' KPIs mejorados
+    Dim wsInv As Worksheet, wsVentas As Worksheet, wsComp As Worksheet
+    Set wsInv = Worksheets("Inventario_Temp")
+    Set wsVentas = Worksheets("Ventas_Temp")
+    Set wsComp = Worksheets("Comparativa_Temp")
     
-    wsDash.Range("B11").Value = IIf(rutaInventario <> "", estadoImportado, estadoPendiente)
-    wsDash.Range("B12").Value = IIf(rutaVentas <> "", estadoImportado, estadoPendiente)
-    wsDash.Range("B13").Value = IIf(rutaComparativa <> "", estadoImportado, estadoPendiente)
-    wsDash.Range("B14").Value = IIf(rutaPreciosNetos <> "", estadoImportado, estadoPendiente)
+    Dim totalRefs As Long, valorInventario As Double, ventasNeto As Double, rotacionPromedio As Double
+    Dim stockMuerto As Long, stockCritico As Long, ventasTotalesComp As Double
+    Dim i As Long, stock, precio, cantidadVendida
+    
+    ' Calcular KPIs básicos
+    totalRefs = Application.CountA(wsInv.Range("A:A")) - 1
+    valorInventario = 0
+    stockMuerto = 0
+    stockCritico = 0
+    
+    For i = 2 To wsInv.Cells(wsInv.Rows.Count, 1).End(xlUp).Row
+        stock = wsInv.Cells(i, 3).Value         ' Columna C: Cantidad en Stock
+        precio = wsInv.Cells(i, 4).Value        ' Columna D: Precio Neto
+        If IsNumeric(stock) And IsNumeric(precio) Then
+            valorInventario = valorInventario + (stock * precio)
+            If stock = 0 Then stockMuerto = stockMuerto + 1
+            If stock > 0 And stock < 5 Then stockCritico = stockCritico + 1
+        End If
+    Next i
+    
+    ventasNeto = 0
+    For i = 2 To wsVentas.Cells(wsVentas.Rows.Count, 1).End(xlUp).Row
+        cantidadVendida = wsVentas.Cells(i, 3).Value ' Columna C: Cantidad Vendida
+        precio = wsVentas.Cells(i, 4).Value          ' Columna D: Precio Neto Venta
+        If IsNumeric(cantidadVendida) And IsNumeric(precio) Then
+            ventasNeto = ventasNeto + (cantidadVendida * precio)
+        End If
+    Next i
+    
+    ' Calcular ventas totales de comparativa
+    ventasTotalesComp = 0
+    For i = 2 To wsComp.Cells(wsComp.Rows.Count, 1).End(xlUp).Row
+        cantidadVendida = wsComp.Cells(i, 3).Value
+        precio = wsComp.Cells(i, 4).Value
+        If IsNumeric(cantidadVendida) And IsNumeric(precio) Then
+            ventasTotalesComp = ventasTotalesComp + (cantidadVendida * precio)
+        End If
+    Next i
+    
+    If valorInventario > 0 Then
+        rotacionPromedio = ventasNeto / valorInventario
+    Else
+        rotacionPromedio = 0
+    End If
+
+    ' Actualizar dashboard con KPIs expandidos
+    wsDash.Range("B17").Value = totalRefs
+    wsDash.Range("B18").Value = Format(valorInventario, "#,##0.00")
+    wsDash.Range("B19").Value = Format(ventasNeto, "#,##0.00")
+    wsDash.Range("B20").Value = Format(rotacionPromedio, "0.00")
+    
+    ' Nuevos KPIs
+    If wsDash.Range("A21").Value = "" Then
+        wsDash.Range("A21").Value = "Referencias Sin Stock:"
+        wsDash.Range("A22").Value = "Referencias Stock Crítico:"
+        wsDash.Range("A23").Value = "Cuota vs Comparativa:"
+        wsDash.Range("A24").Value = "Margen Promedio:"
+    End If
+    
+    wsDash.Range("B21").Value = stockMuerto
+    wsDash.Range("B22").Value = stockCritico
+    If ventasTotalesComp > 0 Then
+        wsDash.Range("B23").Value = Format((ventasNeto / ventasTotalesComp) * 100, "0.00") & "%"
+    Else
+        wsDash.Range("B23").Value = "N/A"
+    End If
+    
+    ' Calcular margen promedio
+    Dim margenTotal As Double, contadorMargen As Long
+    margenTotal = 0
+    contadorMargen = 0
+    For i = 2 To wsInv.Cells(wsInv.Rows.Count, 1).End(xlUp).Row
+        Dim precioCompra, precioVenta
+        precioCompra = wsInv.Cells(i, 4).Value  ' Precio de coste
+        precioVenta = wsInv.Cells(i, 5).Value   ' Precio de venta (si existe)
+        If IsNumeric(precioCompra) And IsNumeric(precioVenta) And precioVenta > 0 Then
+            margenTotal = margenTotal + ((precioVenta - precioCompra) / precioVenta)
+            contadorMargen = contadorMargen + 1
+        End If
+    Next i
+    
+    If contadorMargen > 0 Then
+        wsDash.Range("B24").Value = Format((margenTotal / contadorMargen) * 100, "0.00") & "%"
+    Else
+        wsDash.Range("B24").Value = "N/A"
+    End If
+    
+    ' Generar análisis de recomendaciones
+    Dim recomendacion As String
+    recomendacion = "ANÁLISIS AUTOMÁTICO:" & vbCrLf & vbCrLf
+    
+    If rotacionPromedio < 1 Then
+        recomendacion = recomendacion & "?? ROTACIÓN BAJA: " & Format(rotacionPromedio, "0.00") & " - Revisar estrategia de compras" & vbCrLf
+    ElseIf rotacionPromedio > 4 Then
+        recomendacion = recomendacion & "?? ROTACIÓN ALTA: " & Format(rotacionPromedio, "0.00") & " - Considerar aumentar stock" & vbCrLf
+    Else
+        recomendacion = recomendacion & "? ROTACIÓN ÓPTIMA: " & Format(rotacionPromedio, "0.00") & vbCrLf
+    End If
+    
+    If stockMuerto > totalRefs * 0.2 Then
+        recomendacion = recomendacion & "? STOCK MUERTO ALTO: " & stockMuerto & " referencias sin stock" & vbCrLf
+    End If
+    
+    If stockCritico > totalRefs * 0.15 Then
+        recomendacion = recomendacion & "?? STOCK CRÍTICO: " & stockCritico & " referencias con menos de 5 unidades" & vbCrLf
+    End If
+    
+    wsDash.Range("A26").Value = recomendacion
+
+    ' Generar hoja de recomendación mejorada
+    Call GenerarHojaRecomendacionAvanzada
+
+    MsgBox "Procesamiento completado. Dashboard actualizado con análisis completo.", vbInformation
 End Sub
 
-' ##### Subrutina para Generar Reportes #####
+Public Sub GenerarHojaRecomendacionAvanzada()
+    Dim wsInv As Worksheet, wsVentas As Worksheet, wsComp As Worksheet, wsRec As Worksheet
+    Dim ultInv As Long, ultVentas As Long, ultComp As Long, i As Long, filaActual As Long
+    Dim dictVentas As Object, dictComparativa As Object
+    
+    Set wsInv = Worksheets("Inventario_Temp")
+    Set wsVentas = Worksheets("Ventas_Temp")
+    Set wsComp = Worksheets("Comparativa_Temp")
+    
+    ' Borrar hoja anterior si existe
+    On Error Resume Next
+    Application.DisplayAlerts = False
+    Worksheets("Recomendacion_Pedido").Delete
+    Application.DisplayAlerts = True
+    On Error GoTo 0
+    
+    Set wsRec = Worksheets.Add(After:=Worksheets(Worksheets.Count))
+    wsRec.Name = "Recomendacion_Pedido"
+    
+    ' Encabezados mejorados
+    With wsRec.Range("A1:M1")
+        .Value = Array("Código", "Descripción", "Stock Actual", "Precio Coste", "Precio Venta", _
+                      "Ventas Cliente", "Ventas Mercado", "Rotación", "% Cuota", "Días Stock", _
+                      "Clasificación ABC", "Recomendación", "Cantidad Sugerida")
+        .Font.Bold = True
+        .Interior.Color = RGB(68, 114, 196)
+        .Font.Color = RGB(255, 255, 255)
+    End With
+    
+    ' Construir diccionarios de ventas
+    Set dictVentas = CreateObject("Scripting.Dictionary")
+    Set dictComparativa = CreateObject("Scripting.Dictionary")
+    
+    ultVentas = wsVentas.Cells(wsVentas.Rows.Count, 1).End(xlUp).Row
+    For i = 2 To ultVentas
+        Dim codigoProd As String
+        codigoProd = CStr(wsVentas.Cells(i, 1).Value)
+        If Not dictVentas.Exists(codigoProd) Then
+            dictVentas(codigoProd) = wsVentas.Cells(i, 3).Value ' Cantidad Vendida
+        Else
+            dictVentas(codigoProd) = dictVentas(codigoProd) + wsVentas.Cells(i, 3).Value
+        End If
+    Next i
+    
+    ultComp = wsComp.Cells(wsComp.Rows.Count, 1).End(xlUp).Row
+    For i = 2 To ultComp
+        codigoProd = CStr(wsComp.Cells(i, 1).Value)
+        If Not dictComparativa.Exists(codigoProd) Then
+            dictComparativa(codigoProd) = wsComp.Cells(i, 3).Value ' Cantidad Vendida Mercado
+        Else
+            dictComparativa(codigoProd) = dictComparativa(codigoProd) + wsComp.Cells(i, 3).Value
+        End If
+    Next i
+    
+    ' Procesar cada producto del inventario
+    ultInv = wsInv.Cells(wsInv.Rows.Count, 1).End(xlUp).Row
+    filaActual = 2
+    
+    For i = 2 To ultInv
+        Dim cod As String, desc As String
+        Dim stock As Double, precioCoste As Double, precioVenta As Double
+        Dim ventasCliente As Double, ventasMercado As Double, rotacion As Double
+        Dim cuotaMercado As Double, diasStock As Long
+        Dim clasificacionABC As String, recomendacion As String, cantidadSugerida As Long
+        
+        ' Datos básicos
+        cod = CStr(wsInv.Cells(i, 1).Value)
+        desc = CStr(wsInv.Cells(i, 2).Value)
+        stock = Val(wsInv.Cells(i, 3).Value)
+        precioCoste = Val(wsInv.Cells(i, 4).Value)
+        precioVenta = Val(wsInv.Cells(i, 5).Value) ' Asumiendo que existe columna E con precio venta
+        
+        ' Ventas
+        If dictVentas.Exists(cod) Then
+            ventasCliente = dictVentas(cod)
+        Else
+            ventasCliente = 0
+        End If
+        
+        If dictComparativa.Exists(cod) Then
+            ventasMercado = dictComparativa(cod)
+        Else
+            ventasMercado = 0
+        End If
+        
+        ' Cálculos avanzados
+        If stock > 0 And ventasCliente > 0 Then
+            rotacion = ventasCliente / stock
+            diasStock = Int(30 / (ventasCliente / 30)) ' Estimación días que durará el stock
+        ElseIf ventasCliente > 0 Then
+            rotacion = 999 ' Indicador de que se vende pero no hay stock
+            diasStock = 0
+        Else
+            rotacion = 0
+            diasStock = 999
+        End If
+        
+        ' Cuota de mercado
+        If ventasMercado > 0 Then
+            cuotaMercado = (ventasCliente / ventasMercado) * 100
+        Else
+            cuotaMercado = 0
+        End If
+        
+        ' Clasificación ABC basada en ventas
+        If ventasCliente >= 20 Then
+            clasificacionABC = "A - Alto"
+        ElseIf ventasCliente >= 5 Then
+            clasificacionABC = "B - Medio"
+        ElseIf ventasCliente > 0 Then
+            clasificacionABC = "C - Bajo"
+        Else
+            clasificacionABC = "D - Sin ventas"
+        End If
+        
+        ' Lógica de recomendación mejorada
+        cantidadSugerida = 0
+        If ventasCliente = 0 Then
+            recomendacion = "?? SIN VENTAS - No pedir"
+        ElseIf stock = 0 Then
+            If ventasCliente >= 10 Then
+                recomendacion = "?? URGENTE - Stock agotado con demanda alta"
+                cantidadSugerida = Application.WorksheetFunction.Max(ventasCliente * 2, 10)
+            ElseIf ventasCliente >= 3 Then
+                recomendacion = "?? CRÍTICO - Reponer stock"
+                cantidadSugerida = Application.WorksheetFunction.Max(ventasCliente * 1.5, 5)
+            Else
+                recomendacion = "? PEDIR - Baja demanda"
+                cantidadSugerida = 3
+            End If
+        ElseIf stock < 3 And ventasCliente > 0 Then
+            recomendacion = "?? BAJO STOCK - Aumentar pedido"
+            cantidadSugerida = Application.WorksheetFunction.Max((ventasCliente * 2) - stock, 5)
+        ElseIf diasStock < 15 And ventasCliente >= 5 Then
+            recomendacion = "? STOCK < 15 DÍAS - Pedir pronto"
+            cantidadSugerida = ventasCliente
+        ElseIf rotacion > 3 Then
+            recomendacion = "?? ALTA ROTACIÓN - Optimizar stock"
+            cantidadSugerida = Int(ventasCliente * 0.5)
+        ElseIf diasStock > 60 Then
+            recomendacion = "?? STOCK LENTO - No pedir"
+        Else
+            recomendacion = "? STOCK ÓPTIMO"
+        End If
+        
+        ' Escribir datos en la hoja
+        wsRec.Cells(filaActual, 1).Value = cod
+        wsRec.Cells(filaActual, 2).Value = desc
+        wsRec.Cells(filaActual, 3).Value = stock
+        wsRec.Cells(filaActual, 4).Value = Format(precioCoste, "0.00")
+        wsRec.Cells(filaActual, 5).Value = Format(precioVenta, "0.00")
+        wsRec.Cells(filaActual, 6).Value = ventasCliente
+        wsRec.Cells(filaActual, 7).Value = ventasMercado
+        wsRec.Cells(filaActual, 8).Value = Format(rotacion, "0.00")
+        wsRec.Cells(filaActual, 9).Value = Format(cuotaMercado, "0.0") & "%"
+        wsRec.Cells(filaActual, 10).Value = IIf(diasStock = 999, "8", diasStock)
+        wsRec.Cells(filaActual, 11).Value = clasificacionABC
+        wsRec.Cells(filaActual, 12).Value = recomendacion
+        wsRec.Cells(filaActual, 13).Value = cantidadSugerida
+        
+        filaActual = filaActual + 1
+    Next i
+    
+    ' Formatear la hoja
+    With wsRec
+        .Columns.AutoFit
+        .Range("A1:M" & filaActual - 1).Borders.LineStyle = xlContinuous
+        
+        ' Formato condicional para recomendaciones
+        Dim rngRecomendacion As Range
+        Set rngRecomendacion = .Range("L2:L" & filaActual - 1)
+        
+        ' Aplicar colores según tipo de recomendación
+        For i = 2 To filaActual - 1
+            If InStr(.Cells(i, 12).Value, "??") > 0 Then
+                .Cells(i, 12).Interior.Color = RGB(255, 100, 100) ' Rojo urgente
+            ElseIf InStr(.Cells(i, 12).Value, "??") > 0 Then
+                .Cells(i, 12).Interior.Color = RGB(255, 200, 100) ' Naranja crítico
+            ElseIf InStr(.Cells(i, 12).Value, "?") > 0 Then
+                .Cells(i, 12).Interior.Color = RGB(100, 255, 100) ' Verde óptimo
+            ElseIf InStr(.Cells(i, 12).Value, "??") > 0 Then
+                .Cells(i, 12).Interior.Color = RGB(200, 200, 200) ' Gris sin ventas
+            End If
+        Next i
+        
+        ' Freeze panes
+        .Range("A2").Select
+        ActiveWindow.FreezePanes = True
+    End With
+    
+    ' Crear resumen en la parte superior
+    wsRec.Range("O1").Value = "RESUMEN EJECUTIVO"
+    wsRec.Range("O1").Font.Bold = True
+    wsRec.Range("O1").Font.Size = 14
+    
+    Dim contUrgente As Long, contCritico As Long, contOptimo As Long, contSinVentas As Long
+    For i = 2 To filaActual - 1
+        If InStr(wsRec.Cells(i, 12).Value, "??") > 0 Then contUrgente = contUrgente + 1
+        If InStr(wsRec.Cells(i, 12).Value, "??") > 0 Then contCritico = contCritico + 1
+        If InStr(wsRec.Cells(i, 12).Value, "?") > 0 Then contOptimo = contOptimo + 1
+        If InStr(wsRec.Cells(i, 12).Value, "??") > 0 Then contSinVentas = contSinVentas + 1
+    Next i
+    
+    wsRec.Range("O3").Value = "?? Urgentes: " & contUrgente
+    wsRec.Range("O4").Value = "?? Críticos: " & contCritico
+    wsRec.Range("O5").Value = "? Óptimos: " & contOptimo
+    wsRec.Range("O6").Value = "?? Sin ventas: " & contSinVentas
+    
+    MsgBox "Hoja de recomendación generada con análisis completo de " & (filaActual - 2) & " productos.", vbInformation
+End Sub
 
 Public Sub GenerarReporte()
     If clienteSeleccionado = "" Then
         MsgBox "Seleccione un cliente primero.", vbExclamation
         Exit Sub
     End If
-    
-    Dim rutaReporte As String
-    Dim nombreArchivo As String
-    nombreArchivo = "Reporte_" & clienteSeleccionado & "_" & Replace(nombreCliente, " ", "_") & "_" & Format(Date, "yyyymmdd") & ".xlsx"
-    nombreArchivo = Application.GetSaveAsFilename(nombreArchivo, "Archivos Excel (*.xlsx), *.xlsx")
-    
-    If nombreArchivo = "False" Then Exit Sub
-    
+
+    Dim nombreArchivo As Variant
+    nombreArchivo = Application.GetSaveAsFilename("Reporte_Completo_" & clienteSeleccionado & "_" & Replace(nombreCliente, " ", "_") & "_" & Format(Date, "yyyymmdd") & ".xlsx", "Archivos Excel (*.xlsx), *.xlsx")
+    If nombreArchivo = False Then Exit Sub
+
     Application.ScreenUpdating = False
     Application.DisplayAlerts = False
-    
+
     On Error GoTo ErrorHandler
-    ThisWorkbook.SaveCopyAs nombreArchivo
+    Dim wbReporte As Workbook
+    Set wbReporte = Workbooks.Add
     
+    ' Copiar hojas relevantes al reporte
+    ThisWorkbook.Sheets("Dashboard").Copy Before:=wbReporte.Sheets(1)
+    ThisWorkbook.Sheets("Recomendacion_Pedido").Copy Before:=wbReporte.Sheets(1)
+    
+    ' Eliminar hojas en blanco del reporte
+    Dim s As Worksheet
+    For Each s In wbReporte.Worksheets
+        If s.Name <> "Dashboard" And s.Name <> "Recomendacion_Pedido" Then
+            Application.DisplayAlerts = False
+            s.Delete
+            Application.DisplayAlerts = True
+        End If
+    Next s
+    
+    ' Hacer visibles las hojas copiadas
+    wbReporte.Sheets("Dashboard").Visible = xlSheetVisible
+    wbReporte.Sheets("Recomendacion_Pedido").Visible = xlSheetVisible
+    
+    wbReporte.SaveAs nombreArchivo, FileFormat:=xlOpenXMLWorkbook
+    wbReporte.Close False
+
     Application.ScreenUpdating = True
     Application.DisplayAlerts = True
-    MsgBox "Reporte generado exitosamente en: " & nombreArchivo, vbInformation
+    MsgBox "Reporte completo generado exitosamente en: " & nombreArchivo, vbInformation
     Exit Sub
-    
+
 ErrorHandler:
     Application.ScreenUpdating = True
     Application.DisplayAlerts = True
     MsgBox "Error al generar el reporte: " & Err.Description, vbCritical
 End Sub
 
-' ##### Limpieza (Opcional) #####
-
-Sub LimpiarVariables()
+Public Sub LimpiarVariables()
     clienteSeleccionado = ""
     nombreCliente = ""
     rutaInventario = ""
     rutaVentas = ""
     rutaComparativa = ""
-    rutaPreciosNetos = ""
-    Set listaClientes = Nothing
 End Sub
-
-USERFORM1
-
-' ====================================================================
-' CÓDIGO PARA EL USERFORM (UserForm1) - VERSIÓN OPTIMIZADA Y ROBUSTA
-' PEGAR ESTAS SUBRUTINAS EN EL MÓDULO DE CÓDIGO DE TU UserForm1.
-' Para ello, en el Editor VBA, haz doble clic en UserForm1 en el explorador de proyectos.
-' ====================================================================
-
-Option Explicit ' Obliga a declarar todas las variables, mejorando la robustez
-
-Private Sub UserForm_Initialize()
-    ' Configura las propiedades iniciales del UserForm y sus controles al abrirse.
-    Me.Caption = "Sistema de Gestión de Clientes v2.0" ' Título del formulario
-    
-    ' Configuración de etiquetas y campos de texto
-    Me.TextBox1.Text = "" ' Campo de entrada del código de cliente
-    Me.Label1.Caption = "Introduce el código del cliente" ' Etiqueta para el nombre del cliente/instrucción
-    
-    ' Etiquetas de estado para la importación de archivos
-    Me.Label5.Caption = "Esperando Inventario..." ' Estado para el archivo de inventario
-    Me.Label6.Caption = "Esperando Ventas..." ' Estado para el archivo de ventas
-    Me.Label7.Caption = "Esperando Comparativa..." ' Estado para el archivo comparativo
-    
-    ' Deshabilita botones que requieren un cliente o archivos importados al inicio
-    Me.CommandButton2.Enabled = False ' Botón 'Importar Inventario'
-    Me.CommandButton3.Enabled = False ' Botón 'Importar Ventas'
-    Me.CommandButton4.Enabled = False ' Botón 'Importar Comparativa'
-    Me.CommandButton5.Enabled = False ' Botón 'Procesar Datos'
-    ' Me.CommandButton9.Enabled = False ' Botón 'Generar Reporte' (si CommandButton9 es el de reporte)
-    
-    ' --- NOTA SOBRE CONTROLES DE "PRECIOS NETOS" ---
-    ' Los controles relacionados con "Precios Netos" (TextBoxRutaPreciosNetos, CommandButtonExaminarNetos,
-    ' CommandButtonImportarNetos) no son visibles en la imagen principal de tu UserForm (image_554ee5.png).
-    ' Si estos controles existen en tu diseño de UserForm, asegúrate de que estén correctamente posicionados
-    ' y que su lógica se adapte a tu flujo de trabajo. Para este código, se han comentado
-    ' las líneas relacionadas con ellos, asumiendo que no forman parte del UI principal visible.
-    ' Si necesitas integrarlos, descomenta y adapta el código según tu diseño.
-    ' Me.TextBoxRutaPreciosNetos.Text = ""
-    ' Me.CommandButtonImportarNetos.Enabled = False
-    ' Me.CommandButtonExaminarNetos.Enabled = True
-End Sub
-
-Private Sub CommandButton1_Click() ' Botón 'BUSCAR' (junto al campo de código de cliente)
-    Dim clientCode As String
-    clientCode = Trim(Me.TextBox1.Text) ' Obtiene el código de cliente y elimina espacios en blanco
-
-    If Len(clientCode) = 0 Then
-        MsgBox "Por favor, introduce un código de cliente para buscar.", vbExclamation, "Entrada Requerida"
-        Exit Sub
-    End If
-
-    ' Se asume que 'BuscarCliente' es una función definida en un Módulo estándar (ej. Module1)
-    ' que busca el cliente y devuelve su nombre, o una cadena vacía si no lo encuentra.
-    Dim foundClientName As String
-    foundClientName = BuscarCliente(clientCode) ' Llama a la función BuscarCliente
-    
-    If foundClientName <> "" Then
-        Me.Label1.Caption = "Cliente Seleccionado: " & foundClientName ' Muestra el nombre del cliente
-        ' Habilita los botones de importación y procesamiento una vez que el cliente es encontrado
-        Me.CommandButton2.Enabled = True
-        Me.CommandButton3.Enabled = True
-        Me.CommandButton4.Enabled = True
-        Me.CommandButton5.Enabled = True
-        ' Me.CommandButton9.Enabled = True ' Habilita el botón de Generar Reporte
-    Else
-        Me.Label1.Caption = "Cliente no encontrado."
-        MsgBox "El código de cliente '" & clientCode & "' no se encontró.", vbInformation, "Cliente No Encontrado"
-        ' Deshabilita los botones si el cliente no es encontrado
-        Me.CommandButton2.Enabled = False
-        Me.CommandButton3.Enabled = False
-        Me.CommandButton4.Enabled = False
-        Me.CommandButton5.Enabled = False
-        ' Me.CommandButton9.Enabled = False
-    End If
-End Sub
-
-Private Sub CommandButton2_Click() ' Botón 'Importar Inventario'
-    On Error GoTo ErrorHandler
-    Application.StatusBar = "Importando Inventario..."
-    Call ImportarInventario ' Llama a la subrutina de importación
-    Me.Label5.Caption = "Inventario: Importado" ' Actualiza el estado en la etiqueta
-    Application.StatusBar = False
-    Exit Sub
-ErrorHandler:
-    Me.Label5.Caption = "Inventario: Error"
-    MsgBox "Ocurrió un error al importar el inventario. Verifique que el archivo exista y sea válido.", vbCritical, "Error de Importación"
-    Application.StatusBar = False
-End Sub
-
-Private Sub CommandButton3_Click() ' Botón 'Importar Ventas' (en la imagen "Importar Ventas cliente")
-    On Error GoTo ErrorHandler
-    Application.StatusBar = "Importando Ventas..."
-    Call ImportarVentas ' Llama a la subrutina de importación
-    Me.Label6.Caption = "Ventas: Importadas" ' Actualiza el estado en la etiqueta
-    Application.StatusBar = False
-    Exit Sub
-ErrorHandler:
-    Me.Label6.Caption = "Ventas: Error"
-    MsgBox "Ocurrió un error al importar las ventas. Verifique que el archivo exista y sea válido.", vbCritical, "Error de Importación"
-    Application.StatusBar = False
-End Sub
-
-Private Sub CommandButton4_Click() ' Botón 'Importar Comparativa' (en la imagen "Importar Ventas generales")
-    ' A pesar del texto en la imagen ("Importar Ventas generales"), se asume que este botón
-    ' se corresponde con la función de "Importar Comparativa" descrita en la guía.
-    On Error GoTo ErrorHandler
-    Application.StatusBar = "Importando Comparativa..."
-    Call ImportarComparativa ' Llama a la subrutina de importación
-    Me.Label7.Caption = "Comparativa: Importada" ' Actualiza el estado en la etiqueta
-    Application.StatusBar = False
-    Exit Sub
-ErrorHandler:
-    Me.Label7.Caption = "Comparativa: Error"
-    MsgBox "Ocurrió un error al importar la comparativa. Verifique que el archivo exista y sea válido.", vbCritical, "Error de Importación"
-    Application.StatusBar = False
-End Sub
-
-Private Sub CommandButton5_Click() ' Botón 'PROCESAR DATOS'
-    ' Verifica que todos los archivos necesarios hayan sido importados
-    If Me.Label5.Caption <> "Inventario: Importado" Or _
-       Me.Label6.Caption <> "Ventas: Importadas" Or _
-       Me.Label7.Caption <> "Comparativa: Importada" Then
-        MsgBox "Por favor, importa todos los archivos (Inventario, Ventas, Comparativa) antes de procesar los datos.", vbExclamation, "Archivos Faltantes"
-        Exit Sub
-    End If
-
-    On Error GoTo ErrorHandler
-    Application.ScreenUpdating = False ' Desactiva la actualización de pantalla para mejorar el rendimiento
-    Application.EnableEvents = False   ' Desactiva eventos para evitar interrupciones
-
-    Me.Label1.Caption = "Procesando datos... Por favor, espere." ' Mensaje de estado
-    Me.Repaint ' Fuerza la actualización visual del formulario
-    Application.StatusBar = "Calculando KPIs y generando análisis..."
-
-    Call ProcesarDatos ' Llama a la subrutina principal de procesamiento de datos
-    
-    Application.ScreenUpdating = True ' Reactiva la actualización de pantalla
-    Application.EnableEvents = True   ' Reactiva eventos
-    Application.StatusBar = False
-
-    MsgBox "Datos procesados exitosamente. El Dashboard está listo.", vbInformation, "Proceso Completado"
-    
-    Me.Hide ' Oculta el UserForm después de la confirmación y el procesamiento
-    
-    Exit Sub
-ErrorHandler:
-    Application.ScreenUpdating = True
-    Application.EnableEvents = True
-    Application.StatusBar = False
-    Me.Label1.Caption = "Error al procesar datos."
-    MsgBox "Ocurrió un error durante el procesamiento de datos. Revise los módulos de código.", vbCritical, "Error de Procesamiento"
-End Sub
-
-Private Sub CommandButton7_Click() ' Botón 'Limpiar' (posición izquierda inferior en la imagen)
-    ' Restablece el formulario a su estado inicial
-    Me.TextBox1.Text = ""
-    Me.Label1.Caption = "Introduce el código del cliente"
-    Me.Label5.Caption = "Esperando Inventario..."
-    Me.Label6.Caption = "Esperando Ventas..."
-    Me.Label7.Caption = "Esperando Comparativa..."
-    
-    ' Deshabilita los botones de acción hasta que se seleccione un nuevo cliente y se importen los archivos
-    Me.CommandButton2.Enabled = False
-    Me.CommandButton3.Enabled = False
-    Me.CommandButton4.Enabled = False
-    Me.CommandButton5.Enabled = False
-    ' Me.CommandButton9.Enabled = False
-    
-    MsgBox "Formulario limpiado. Listo para una nueva operación.", vbInformation, "Formulario Reiniciado"
-End Sub
-
-Private Sub CommandButton6_Click() ' Botón 'Salir' (posición derecha inferior en la imagen)
-    ' Cierra el UserForm completamente
-    Unload Me
-End Sub
-
-Private Sub CommandButton9_Click() ' Botón 'GENERAR REPORTE' (asumiendo este nombre para el botón visible en la imagen)
-    On Error GoTo ErrorHandler
-    Application.StatusBar = "Generando y enviando reporte..."
-    Call GenerarReporte ' Llama a la subrutina para generar el reporte
-    MsgBox "Reporte generado y listo. Se ha preparado el email (si configurado).", vbInformation, "Reporte Generado"
-    Application.StatusBar = False
-    Exit Sub
-ErrorHandler:
-    MsgBox "Ocurrió un error al generar el reporte. Verifique la configuración de email y los datos.", vbCritical, "Error al Generar Reporte"
-    Application.StatusBar = False
-End Sub
-
-' --- Se han eliminado o comentado subrutinas no utilizadas o redundantes: ---
-' Private Sub Busquedacliente_Click() - Esta subrutina era redundante con CommandButton1_Click.
-' Si tenías un botón llamado "Busquedacliente", por favor, usa CommandButton1 para la funcionalidad de búsqueda.
-
-' --- Comentadas las subs de "Precios Netos" si no están visibles en el UserForm principal ---
-' Private Sub CommandButtonExaminarNetos_Click()
-'   Dim rutaArchivo As Variant
-'   rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de precios netos")
-'   If rutaArchivo = False Then ' Si el usuario cancela la selección
-'     Me.TextBoxRutaPreciosNetos.Text = ""
-'     Me.CommandButtonImportarNetos.Enabled = False
-'     MsgBox "Selección de archivo de precios netos cancelada.", vbInformation
-'   Else
-'     Me.TextBoxRutaPreciosNetos.Text = rutaArchivo
-'     Me.CommandButtonImportarNetos.Enabled = True ' Habilita el botón de importar
-'   End If
-' End Sub
-
-' Private Sub CommandButtonImportarNetos_Click()
-'   Dim ruta As String
-'   ruta = Me.TextBoxRutaPreciosNetos.Text
-'   If ruta = "" Then
-'     MsgBox "Por favor, selecciona un archivo de precios netos primero.", vbExclamation
-'     Exit Sub
-'   End If
-'   Call ImportarPreciosNetosDesdeArchivo(ruta) ' Asume que esta función existe en un módulo
-'   Me.CommandButtonImportarNetos.Enabled = False ' Deshabilita el botón después de la importación
-' End Sub
-
-
 
