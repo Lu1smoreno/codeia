@@ -12,7 +12,7 @@
         .dashboard-container { padding: 2em; max-width: 1200px; margin: 2.5em auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 16px #446ccc20; }
         .kpis-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            grid-template-columns: repeat(auto-fit, minminmax(200px, 1fr));
             gap: 1.5em;
             margin-bottom: 2.5em;
         }
@@ -41,9 +41,8 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            /* Nuevas propiedades para controlar el tamaño */
-            height: 400px; /* Altura fija para todos los contenedores de gráfico */
-            /* max-width: 100%; */ /* Descomentar si necesitas que sea 100% del padre */
+            /* CAMBIO CLAVE AQUÍ: Altura reducida para que los gráficos sean más pequeños */
+            height: 300px; /* Reducido de 400px a 300px */
             box-sizing: border-box; /* Incluye padding y borde en el tamaño */
         }
         /* Ajuste específico para el canvas dentro del contenedor */
@@ -51,8 +50,6 @@
             max-height: 100%; /* Limita la altura del canvas para que no se estire */
             max-width: 100%; /* Limita el ancho del canvas */
         }
-        /* Cierre de llave que estaba mal en tu código original */
-        /* } */ 
         .chart-container h3 { text-align: center; margin-top: 0; color: #446ccc; font-size: 1.2em;}
         .data-table-section { margin-top: 3em; }
         .data-table-section h2 { text-align: center; margin-bottom: 1.5em; color: #446ccc; }
