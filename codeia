@@ -1,698 +1,178 @@
-Option Explicit
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <title>Panel de Control de Inventario y Recomendaciones</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <style>
+    body { font-family: 'Segoe UI', Arial, sans-serif; margin: 0; background: #f4f6fa; }
+    header { background: #446ccc; color: #fff; padding: 1.5em 2em; }
+    main { max-width: 1200px; margin: 2em auto; background: #fff; border-radius: 12px; box-shadow: 0 2px 12px #8882; }
+    section { padding: 2em; }
+    table { border-collapse: collapse; width: 100%; font-size: 15px; }
+    th, td { padding: 8px 12px; border-bottom: 1px solid #eee; }
+    th { background: #446ccc; color: #fff; }
+    tr:nth-child(even) { background: #f4f6fa; }
+    .alert { font-weight: bold; padding: 4px 8px; border-radius: 6px; display: inline-block; }
+    .urgente { background: #ff6464; color: #222; }
+    .critico { background: #ffbc64; color: #222; }
+    .bajo { background: #ffff64; color: #222; }
+    .optimo { background: #64ff64; color: #222; }
+    .lento { background: #cccccc; color: #222; }
+    .sinventas { background: #b4b4b4; color: #222; }
+    .kpis > div { display: inline-block; margin: 0 2em 1em 0; }
+    footer { text-align: center; padding: 2em; color: #999; }
+    @media (max-width: 700px) {
+      main, section { padding: 1em; }
+      table, th, td { font-size: 13px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>Panel de Control de Inventario y Recomendaciones</h1>
+  </header>
+  <main>
+    <section>
+      <h2>Paso 1: Seleccione Cliente</h2>
+      <input type="text" id="clienteCodigo" placeholder="Código de cliente" style="font-size:16px;padding:6px;">
+      <input type="text" id="clienteNombre" placeholder="Nombre del cliente" style="font-size:16px;margin-left:16px;padding:6px;">
+    </section>
+    <section>
+      <h2>Paso 2: Suba sus archivos Excel</h2>
+      <label>Inventario: <input type="file" id="fileInventario" accept=".xlsx,.xls,.csv"></label>
+      <label style="margin-left:16px;">Ventas: <input type="file" id="fileVentas" accept=".xlsx,.xls,.csv"></label>
+      <label style="margin-left:16px;">Comparativa: <input type="file" id="fileComparativa" accept=".xlsx,.xls,.csv"></label>
+      <button id="btnProcesar" style="margin-left:30px;padding:0.5em 1.2em;font-size:17px;background:#446ccc;color:#fff;border:none;border-radius:6px;">
+        Procesar Datos
+      </button>
+    </section>
+    <section id="kpisSection" style="display:none;">
+      <h2>KPIs Generales</h2>
+      <div class="kpis" id="kpis"></div>
+    </section>
+    <section id="recsSection" style="display:none;">
+      <h2>Recomendaciones de Pedido</h2>
+      <table id="tablaRecs">
+        <thead>
+          <tr>
+            <th>Código</th>
+            <th>Descripción</th>
+            <th>Stock</th>
+            <th>Coste</th>
+            <th>Venta</th>
+            <th>Ventas Cliente</th>
+            <th>Ventas Mercado</th>
+            <th>Recomendación</th>
+          </tr>
+        </thead>
+        <tbody></tbody>
+      </table>
+    </section>
+  </main>
+  <footer>
+    &copy; <span id="year"></span> - Sistema de Recomendaciones Visual &mdash; Adaptado de VBA a Web
+  </footer>
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  <script>
+    document.getElementById('year').textContent = new Date().getFullYear();
+    let inventario = [], ventas = [], comparativa = [];
 
-' Variables globales
-Public clienteSeleccionado As String
-Public nombreCliente As String
-Public rutaInventario As String
-Public rutaVentas As String
-Public rutaComparativa As String
+    function leerArchivo(input, callback) {
+      const file = input.files[0];
+      if (!file) return callback([]);
+      const reader = new FileReader();
+      reader.onload = e => {
+        let data = new Uint8Array(e.target.result);
+        let workbook = XLSX.read(data, {type: 'array'});
+        let sheet = workbook.Sheets[workbook.SheetNames[0]];
+        callback(XLSX.utils.sheet_to_json(sheet, {header:1}));
+      };
+      reader.readAsArrayBuffer(file);
+    }
 
-Private listaClientes As Object
+    document.getElementById('fileInventario').addEventListener('change', e => {
+      leerArchivo(e.target, data => { inventario = data; });
+    });
+    document.getElementById('fileVentas').addEventListener('change', e => {
+      leerArchivo(e.target, data => { ventas = data; });
+    });
+    document.getElementById('fileComparativa').addEventListener('change', e => {
+      leerArchivo(e.target, data => { comparativa = data; });
+    });
 
-Sub InicializarSistema()
-    Call InicializarListaClientes
-    Call ConfigurarHojas
-    Call LimpiarVariables
-End Sub
-
-Private Sub InicializarListaClientes()
-    Set listaClientes = CreateObject("Scripting.Dictionary")
-    listaClientes.CompareMode = vbTextCompare
-    ' --- Listado COMPLETO de clientes, copia y pega tus clientes aquí ---
-    listaClientes.Add "25351", "Recambios Barreiro, S.L.U."
-    listaClientes.Add "25355", "TOT Frens, S.L."
-    listaClientes.Add "26846", "Centrauto Componentes Auto, Lda."
-    listaClientes.Add "29211", "URO Vehículos Especiales, S.A."
-    listaClientes.Add "31485", "Bragalis Peças e Acess. P/"
-    listaClientes.Add "32738", "GRUPO PEÑA AUTOMOCIÓN, S.L."
-    listaClientes.Add "32753", "Recambios Y Accesorios Gaudi, S.L."
-    listaClientes.Add "34169", "EMBRAGUES PEDREÑO, S.L."
-    listaClientes.Add "44571", "HIDRAULICOS Y FRENOS, S.A."
-    listaClientes.Add "48647", "RECANVIS NOMAR, S.L."
-    listaClientes.Add "53292", "REPUESTOS ROMA, S.L."
-    listaClientes.Add "53447", "REPUESTOS SERCA, S.L.U."
-    listaClientes.Add "53454", "RECAMBIOS PARA CAMION Y BUS, S.L."
-    listaClientes.Add "53553", "RECAMBIOS PACO, S.L."
-    listaClientes.Add "54261", "ASYSUM, S.A."
-    listaClientes.Add "54729", "Navarro Hnos. Almeria, S.L."
-    listaClientes.Add "57804", "Innovadora de Recambios S.L."
-    listaClientes.Add "57823", "ASOCIACION DE RECAMBISTAS 98 S.L."
-    listaClientes.Add "57902", "Autocamión Norte S.L."
-    listaClientes.Add "58186", "Sofrapa Automoveis S.A."
-    listaClientes.Add "59366", "Repuestos Eusko-Auto"
-    listaClientes.Add "59371", "Auto Recambios Vera S.L."
-    listaClientes.Add "59428", "Jesus Díez, S.A."
-    listaClientes.Add "59631", "Recambios Ibiza S.A."
-    listaClientes.Add "61532", "AD Bosch Recanvis, S.L.U."
-    listaClientes.Add "61838", "CIVIPARTS ESPAÑA, S.L."
-    listaClientes.Add "70434", "Krautli Portugal"
-    listaClientes.Add "77564", "Grupo de Recambios Amador, S.L."
-    listaClientes.Add "77565", "Grupo Recambios G.R.A.Tenerife,S.L."
-    listaClientes.Add "78255", "Eurorecambios del Camión, S.L."
-    listaClientes.Add "78480", "Interlleida Motor, S.L."
-    listaClientes.Add "78603", "Grovisa, S.A."
-    listaClientes.Add "78853", "Comercial Oroz Tudela, S.L."
-    listaClientes.Add "81536", "Industriales Valencia, S.L."
-    listaClientes.Add "81896", "Equipamovil, S.L."
-    listaClientes.Add "82747", "Europart Portugal, S.A."
-    listaClientes.Add "83186", "Grupauto Murcia, S.L."
-    listaClientes.Add "84461", "Intern. Delivery Parts 2008, S.L.U"
-    listaClientes.Add "85293", "Selling Motors, S.L."
-    listaClientes.Add "85576", "Recambios Meres, S.L."
-    listaClientes.Add "85740", "Repuestos Hubri, S.L."
-    listaClientes.Add "90574", "Recambios Industriales Garmo, S.L."
-    listaClientes.Add "90681", "Luis Moleon Recambios, S.L."
-    listaClientes.Add "93002", "M COUTINHO PEÇAS E REP AUT, S.A."
-    listaClientes.Add "93023", "Veinsur, S.A.U."
-    listaClientes.Add "94691", "AD TRANSCOSE SOLUCIONS, S.L."
-    listaClientes.Add "95282", "AD Siro Automoción, S.L."
-    listaClientes.Add "95332", "COMERCIAL BOIZ, S.A."
-    listaClientes.Add "95437", "VISOPARTS -ACESS SEMI-REBOQ. Lda"
-    listaClientes.Add "95464", "AD LEVANTE PARTS, S.L."
-    listaClientes.Add "95496", "SGP-Global Parts, Lda."
-    listaClientes.Add "96075", "Motorbus, Reparaçoes e Peças Auto Lda."
-    listaClientes.Add "96254", "Ad Marina Automotive 2017, S.L.U."
-    listaClientes.Add "96420", "AD Freco Parts, S.L."
-    listaClientes.Add "96548", "HBC II - Peças Auto, Lda."
-    listaClientes.Add "97297", "AD SALAS AUTOMOCION"
-    listaClientes.Add "97391", "RECALVI MEDITERRANEA, S.L."
-    listaClientes.Add "97502", "CREATE BUSINESS IBERIA AFTERMARKET, S.L."
-    listaClientes.Add "97547", "Recalvi Norte, S.A."
-    listaClientes.Add "97589", "Recambios Colón Catarroja, S.A."
-    listaClientes.Add "97721", "PSAG Automobiles Comercial Espana,"
-    listaClientes.Add "98278", "AUTO RECAMBIOS PENALVER, S.L.U."
-    listaClientes.Add "98431", "SELLING MOTORS CENTRO, S.L."
-    listaClientes.Add "98600", "Repuestos Guadiana, S.L."
-    listaClientes.Add "98770", "GRUPAUTO SEVILLA"
-    listaClientes.Add "98822", "AD REGUEIRA GIJON, S.L."
-    listaClientes.Add "99176", "AUTO PARTS PLUS, S.L."
-    listaClientes.Add "99486", "Portomotor, S.L.U."
-    listaClientes.Add "99506", "Ad Recambios Extremadura"
-    listaClientes.Add "99507", "Ad Recambios Extremadura"
-    listaClientes.Add "99508", "Ad Recambios Extremadura"
-    listaClientes.Add "99509", "Ad Recambios Extremadura"
-    listaClientes.Add "99510", "Ad Recambios Extremadura"
-    listaClientes.Add "99512", "Ad Recambios Extremadura"
-    listaClientes.Add "99513", "Ad Recambios Extremadura"
-    listaClientes.Add "99514", "Ad Recambios Extremadura"
-    listaClientes.Add "99972", "DAVA, S.A."
-    listaClientes.Add "100349", "AZUR GLOBAL BUSINESS, S.L."
-    listaClientes.Add "100468", "NEWONEDRIVE COMERCIO DE PECAS"
-    listaClientes.Add "100714", "Recalvi Canarias, S.L."
-    listaClientes.Add "101381", "Euma Parts, S.L.U."
-    listaClientes.Add "2000595", "CIVIPARTES & EUROPA"
-    listaClientes.Add "2002101", "BURUAGA, S.L."
-    listaClientes.Add "2005021", "RECAMBIOS INFRA, S.L."
-    listaClientes.Add "2005022", "Vilarmau I Freixa, S.L."
-    listaClientes.Add "2005031", "FRENBUR, S.L."
-    listaClientes.Add "2005038", "FRENOS HERMANOS MARTINEZ, S.L."
-    listaClientes.Add "2005065", "AVENMAR, S.A."
-    listaClientes.Add "2005067", "ARAVI S.A."
-    listaClientes.Add "2005074", "RECAMBIOS GRAN VIA, S.A."
-    listaClientes.Add "2005076", "REPUESTOS SAN EMETERIO, S.L."
-    listaClientes.Add "2005077", "Hermanos Gómez Pleguezuelos, S.L."
-    listaClientes.Add "2005078", "AUTO RECAMBIOS LOMEÑA, S.L."
-    listaClientes.Add "2005081", "Frenos Y Embragues Valsan, S.L."
-    listaClientes.Add "2005088", "Comercial Navarro Hermanos, S.A."
-    listaClientes.Add "2005093", "AUTO RECAMBIOS GIJON, S.A.L."
-    listaClientes.Add "2005094", "REGUEIRA ASTURIAS, S.L."
-    listaClientes.Add "2005097", "SUREYA, S.L."
-    listaClientes.Add "2005103", "REPUESTOS DORAL, S.L."
-    listaClientes.Add "2005108", "TVH Parts España, S.A."
-    listaClientes.Add "2005114", "RECAMBIOS INDUSTRIALES MOLEON, S.A."
-    listaClientes.Add "2005119", "AD GRUPO REGUEIRA, S.A."
-    listaClientes.Add "2005121", "VIUDA DE EGIDO E HIJOS, S.L."
-    listaClientes.Add "2005124", "Vemare, S.L.U."
-    listaClientes.Add "2005126", "Regenauto, S.A."
-    listaClientes.Add "2005132", "MAYOR RECAMBIOS, S.L."
-    listaClientes.Add "2005141", "RS TURIA, S.L."
-    listaClientes.Add "2005143", "Repuestos Posada, S.L."
-    listaClientes.Add "2005145", "RECAMBIOS MORAL, S.L."
-    listaClientes.Add "2005147", "AUTO INDUSTRIAL BASCONIA, S.A."
-    listaClientes.Add "2005148", "RECATRANS, S.L."
-    listaClientes.Add "2005157", "AUTO RECAMBIOS VILBER, S.L."
-    listaClientes.Add "2005162", "CECAUTO SUR, S.A."
-    listaClientes.Add "2005163", "CECAUTO LEVANTE, S.A."
-    listaClientes.Add "2005174", "AD REGUEIRA ASOCIADOS, S.L."
-    listaClientes.Add "2005183", "Automocion Oryx Parts, S.L."
-    listaClientes.Add "2005186", "A.D. Cantabria, S.A."
-    listaClientes.Add "2005195", "CECAUTO CANARIAS S.A."
-    listaClientes.Add "2005197", "RECAMBIOS BALSA HERMANOS, S.L."
-    listaClientes.Add "2005198", "AUTORECAMBIOS VICENTE, S.A."
-    listaClientes.Add "2005199", "SILVESTRE AUTOPARTS, S.L."
-    listaClientes.Add "2005201", "RECAMBIOS FRAIN, S.L."
-    listaClientes.Add "2005203", "CECAUTO, S.A."
-    listaClientes.Add "2005209", "CECAUTO NORTE, S.A."
-    listaClientes.Add "2005210", "ERESA AUTOCLIMA, S.L."
-    listaClientes.Add "2005269", "Recalvi, S.L."
-    listaClientes.Add "2005308", "Grupauto, S.A."
-    listaClientes.Add "2005313", "Moraleda Recambios Agricolas, S.L."
-    listaClientes.Add "2005336", "ERESA AUTOMOCION, S.L."
-    listaClientes.Add "2005340", "GSAUTO RECAMBIOS, S.L."
-    listaClientes.Add "2005341", "SILVESTRE AUTODISTRIBUCION, S.L."
-    listaClientes.Add "2005346", "UNION RECAMBISTAS V.I., S.L."
-    listaClientes.Add "2005382", "SACORAUTO, S.A."
-    listaClientes.Add "2005408", "Grupauto Albacete, S.L."
-    listaClientes.Add "2005410", "ACC. Y RECAMBIOS LOS JUANES, S.A."
-    listaClientes.Add "2005419", "Rep. Gali Veh. Ind., S.L."
-    listaClientes.Add "2005424", "Comercial Dinamic's, S.L."
-    listaClientes.Add "2005430", "Recambios Reynasa"
-    listaClientes.Add "2005433", "REPUESTOS VICENTE, S.L."
-    listaClientes.Add "2005434", "Recambios Ochoa, S.L."
-    listaClientes.Add "2005436", "RECAMBIOS AICRAG, S.A."
-    listaClientes.Add "2005437", "AUTO RECAMBIOS SEGORBE, S.L."
-    listaClientes.Add "2005443", "Auto Rec. FCO. Cerda Perales, S.L."
-    listaClientes.Add "2005461", "Recanvis Penedes, S.L."
-    listaClientes.Add "2005471", "AD MASANÉS, S.A."
-    listaClientes.Add "2005480", "Recambios del Olmo, S.L."
-    listaClientes.Add "2005496", "RECAMBIOS REYMO, S.L."
-    listaClientes.Add "2005501", "Jiménez Maña Recambios, S.L.U."
-    listaClientes.Add "2005505", "Recambios Asturias, S.L.U."
-    listaClientes.Add "2005506", "RECAMBIOS PACO DE SORIA, S.L."
-    listaClientes.Add "2005544", "Recambios Internacionales, S.A."
-    listaClientes.Add "2005548", "REPUESTOS REAL, S.L."
-    listaClientes.Add "2005557", "CECAUTO LEVANTE, S.A. (ALBACETE)"
-    listaClientes.Add "2005558", "CECAUTO MLG, S.A."
-    listaClientes.Add "2005559", "Recambios Calfer, S.L."
-    listaClientes.Add "2005579", "MAYOR CATALANA, S.L."
-    listaClientes.Add "2005608", "Almacen de Recambios Paher, S.A."
-    listaClientes.Add "2005613", "CECAUTO CENTRO, S.A."
-    listaClientes.Add "2005874", "REPUESTOS URUGUAY, S.A."
-    listaClientes.Add "2005878", "Auteide S.A."
-    listaClientes.Add "2005913", "SOULIMA COMERCIO DE PEÇAS, S.A."
-    listaClientes.Add "2005915", "AGROVIMAIA LDA."
-    listaClientes.Add "2005916", "AUTOZITANIA-ACCESORIOS E"
-    listaClientes.Add "2005918", "AUTO-DELTA LDA."
-    listaClientes.Add "2005920", "PEÇAOESTE LDA."
-    listaClientes.Add "2005922", "Fimag, Imp E Com de Accesor, Lda."
-    listaClientes.Add "2005927", "Tractorminho-Dist. Peças E Material"
-    listaClientes.Add "2005929", "ATLANTIC PARTS"
-    listaClientes.Add "2005934", "Create Business, S.A."
-    listaClientes.Add "2005935", "AUTO SILVA ACESSORIOS, S.A."
-    listaClientes.Add "102682", "Kramp Groep B.V."
-    listaClientes.Add "102287", "Recambios Eurotruck, S.L.L."
-    listaClientes.Add "102846", "EUROPEÇAS, S.A."
-    listaClientes.Add "103809", "Especialidades Electricas Lausan S."
-    listaClientes.Add "101828", "EUMA PRO 2020, S.L.U."
-    listaClientes.Add "104736", "STELLANTIS ESPAÑA, S.L."
-    listaClientes.Add "44998", "RECAMBIOS AUTODIESEL"
-    listaClientes.Add "104864", "LOGIPRO PARTS S.L."
-    listaClientes.Add "104926", "RSE Calahorra, S.L."
-    listaClientes.Add "104989", "DIPART"
-    listaClientes.Add "105178", "Automocion Sostenible T+C, S.L."
-    listaClientes.Add "78783", "Suvima, S.A."
-    listaClientes.Add "106723", "Alecarpeças Acessorios de Automoveis S.A."
-    listaClientes.Add "84813", "Alliance Automotive Procurement Ltd"
-    listaClientes.Add "107294", "Auto Comercio Salduba, S.L."
-    listaClientes.Add "111451", "Recalvi Parts, S.L.U."
-    listaClientes.Add "112167", "Recalvi Parts, S.L.U."
-    listaClientes.Add "109968", "Bomboleo, Lda."
-    listaClientes.Add "112842", "CHAPARRO AGRICOLA E INDISTRIAL, S.L"
-    listaClientes.Add "109956", "Global Parts Iberica, S.L."
-    listaClientes.Add "113038", "Bomboleo, Lda."
-    listaClientes.Add "113368", "AMA Cafiatra Portugal, Lda."
-    listaClientes.Add "113389", "RECALVI RETAIL, S.A."
-End Sub
-
-Private Sub ConfigurarHojas()
-    Call CrearHojaSiNoExiste("Dashboard", False)
-    Call CrearHojaSiNoExiste("Datos_Cliente", True)
-    Call CrearHojaSiNoExiste("Inventario_Temp", True)
-    Call CrearHojaSiNoExiste("Ventas_Temp", True)
-    Call CrearHojaSiNoExiste("Comparativa_Temp", True)
-End Sub
-
-Private Sub CrearHojaSiNoExiste(nombreHoja As String, Optional ocultar As Boolean = False)
-    Dim ws As Worksheet
-    On Error Resume Next
-    Set ws = Worksheets(nombreHoja)
-    On Error GoTo 0
-    If ws Is Nothing Then
-        Set ws = Worksheets.Add(After:=Worksheets(Worksheets.Count))
-        ws.Name = nombreHoja
-        If ocultar Then ws.Visible = xlSheetHidden
-    End If
-End Sub
-
-Public Function BuscarCliente(ByVal codigoCliente As String) As String
-    If listaClientes Is Nothing Then Call InicializarListaClientes
-    If listaClientes.Exists(codigoCliente) Then
-        BuscarCliente = listaClientes.Item(codigoCliente)
-    Else
-        BuscarCliente = ""
-    End If
-End Function
-
-Public Sub ImportarInventario()
-    Call ImportarArchivoGenerico("Inventario")
-End Sub
-
-Public Sub ImportarVentas()
-    Call ImportarArchivoGenerico("Ventas")
-End Sub
-
-Public Sub ImportarComparativa()
-    Call ImportarArchivoGenerico("Comparativa")
-End Sub
-
-Private Sub ImportarArchivoGenerico(tipoArchivo As String)
-    Dim rutaArchivo As Variant
-    Dim wsDestino As Worksheet
-    Select Case tipoArchivo
-        Case "Inventario": Set wsDestino = Worksheets("Inventario_Temp"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Inventario")
-        Case "Ventas": Set wsDestino = Worksheets("Ventas_Temp"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Ventas")
-        Case "Comparativa": Set wsDestino = Worksheets("Comparativa_Temp"): rutaArchivo = Application.GetOpenFilename("Archivos Excel (*.xls*), *.xls*", , "Seleccionar archivo de Comparativa")
-        Case Else: MsgBox "Tipo de archivo no reconocido.", vbCritical: Exit Sub
-    End Select
-    If rutaArchivo = False Then Exit Sub
-    Dim wb As Workbook, wsOrigen As Worksheet
-    Application.ScreenUpdating = False
-    Application.DisplayAlerts = False
-    On Error GoTo ErrorHandler
-    Set wb = Workbooks.Open(rutaArchivo, ReadOnly:=True, UpdateLinks:=False)
-    Set wsOrigen = wb.Sheets(1)
-    wsDestino.Cells.Clear
-    wsOrigen.UsedRange.Copy wsDestino.Range("A1")
-    wb.Close False
-    Select Case tipoArchivo
-        Case "Inventario": rutaInventario = rutaArchivo
-        Case "Ventas": rutaVentas = rutaArchivo
-        Case "Comparativa": rutaComparativa = rutaArchivo
-    End Select
-    Application.ScreenUpdating = True
-    Application.DisplayAlerts = True
-    MsgBox tipoArchivo & " importado correctamente desde: " & rutaArchivo, vbInformation
-    Exit Sub
-ErrorHandler:
-    Application.ScreenUpdating = True
-    Application.DisplayAlerts = True
-    If Not wb Is Nothing Then wb.Close False
-    MsgBox "Error al importar " & tipoArchivo & ": " & Err.Description, vbCritical, "Error de Importación"
-End Sub
-
-Public Sub ProcesarDatos()
-    If clienteSeleccionado = "" Then
-        MsgBox "Seleccione un cliente primero.", vbExclamation
-        Exit Sub
-    End If
-    If rutaInventario = "" Or rutaVentas = "" Or rutaComparativa = "" Then
-        MsgBox "Importe todos los archivos necesarios.", vbExclamation
-        Exit Sub
-    End If
-    
-    ' Rellenar información del cliente en el dashboard
-    Dim wsDash As Worksheet
-    Set wsDash = Worksheets("Dashboard")
-    wsDash.Range("B4").Value = clienteSeleccionado
-    wsDash.Range("B5").Value = nombreCliente
-    wsDash.Range("B6").Value = Format(Now, "dd/mm/yyyy HH:MM")
-    
-    ' KPIs mejorados
-    Dim wsInv As Worksheet, wsVentas As Worksheet, wsComp As Worksheet
-    Set wsInv = Worksheets("Inventario_Temp")
-    Set wsVentas = Worksheets("Ventas_Temp")
-    Set wsComp = Worksheets("Comparativa_Temp")
-    
-    Dim totalRefs As Long, valorInventario As Double, ventasNeto As Double, rotacionPromedio As Double
-    Dim stockMuerto As Long, stockCritico As Long, ventasTotalesComp As Double
-    Dim i As Long, stock, precio, cantidadVendida
-    
-    ' Calcular KPIs básicos
-    totalRefs = Application.CountA(wsInv.Range("A:A")) - 1
-    valorInventario = 0
-    stockMuerto = 0
-    stockCritico = 0
-    
-    For i = 2 To wsInv.Cells(wsInv.Rows.Count, 1).End(xlUp).Row
-        stock = wsInv.Cells(i, 3).Value         ' Columna C: Cantidad en Stock
-        precio = wsInv.Cells(i, 4).Value        ' Columna D: Precio Neto
-        If IsNumeric(stock) And IsNumeric(precio) Then
-            valorInventario = valorInventario + (stock * precio)
-            If stock = 0 Then stockMuerto = stockMuerto + 1
-            If stock > 0 And stock < 5 Then stockCritico = stockCritico + 1
-        End If
-    Next i
-    
-    ventasNeto = 0
-    For i = 2 To wsVentas.Cells(wsVentas.Rows.Count, 1).End(xlUp).Row
-        cantidadVendida = wsVentas.Cells(i, 3).Value ' Columna C: Cantidad Vendida
-        precio = wsVentas.Cells(i, 4).Value          ' Columna D: Precio Neto Venta
-        If IsNumeric(cantidadVendida) And IsNumeric(precio) Then
-            ventasNeto = ventasNeto + (cantidadVendida * precio)
-        End If
-    Next i
-    
-    ' Calcular ventas totales de comparativa
-    ventasTotalesComp = 0
-    For i = 2 To wsComp.Cells(wsComp.Rows.Count, 1).End(xlUp).Row
-        cantidadVendida = wsComp.Cells(i, 3).Value
-        precio = wsComp.Cells(i, 4).Value
-        If IsNumeric(cantidadVendida) And IsNumeric(precio) Then
-            ventasTotalesComp = ventasTotalesComp + (cantidadVendida * precio)
-        End If
-    Next i
-    
-    If valorInventario > 0 Then
-        rotacionPromedio = ventasNeto / valorInventario
-    Else
-        rotacionPromedio = 0
-    End If
-
-    ' Actualizar dashboard con KPIs expandidos
-    wsDash.Range("B17").Value = totalRefs
-    wsDash.Range("B18").Value = Format(valorInventario, "#,##0.00")
-    wsDash.Range("B19").Value = Format(ventasNeto, "#,##0.00")
-    wsDash.Range("B20").Value = Format(rotacionPromedio, "0.00")
-    
-    ' Nuevos KPIs
-    If wsDash.Range("A21").Value = "" Then
-        wsDash.Range("A21").Value = "Referencias Sin Stock:"
-        wsDash.Range("A22").Value = "Referencias Stock Crítico:"
-        wsDash.Range("A23").Value = "Cuota vs Comparativa:"
-        wsDash.Range("A24").Value = "Margen Promedio:"
-    End If
-    
-    wsDash.Range("B21").Value = stockMuerto
-    wsDash.Range("B22").Value = stockCritico
-    If ventasTotalesComp > 0 Then
-        wsDash.Range("B23").Value = Format((ventasNeto / ventasTotalesComp) * 100, "0.00") & "%"
-    Else
-        wsDash.Range("B23").Value = "N/A"
-    End If
-    
-    ' Calcular margen promedio
-    Dim margenTotal As Double, contadorMargen As Long
-    margenTotal = 0
-    contadorMargen = 0
-    For i = 2 To wsInv.Cells(wsInv.Rows.Count, 1).End(xlUp).Row
-        Dim precioCompra, precioVenta
-        precioCompra = wsInv.Cells(i, 4).Value  ' Precio de coste
-        precioVenta = wsInv.Cells(i, 5).Value   ' Precio de venta (si existe)
-        If IsNumeric(precioCompra) And IsNumeric(precioVenta) And precioVenta > 0 Then
-            margenTotal = margenTotal + ((precioVenta - precioCompra) / precioVenta)
-            contadorMargen = contadorMargen + 1
-        End If
-    Next i
-    
-    If contadorMargen > 0 Then
-        wsDash.Range("B24").Value = Format((margenTotal / contadorMargen) * 100, "0.00") & "%"
-    Else
-        wsDash.Range("B24").Value = "N/A"
-    End If
-    
-    ' Generar análisis de recomendaciones
-    Dim recomendacion As String
-    recomendacion = "ANÁLISIS AUTOMÁTICO:" & vbCrLf & vbCrLf
-    
-    If rotacionPromedio < 1 Then
-        recomendacion = recomendacion & "?? ROTACIÓN BAJA: " & Format(rotacionPromedio, "0.00") & " - Revisar estrategia de compras" & vbCrLf
-    ElseIf rotacionPromedio > 4 Then
-        recomendacion = recomendacion & "?? ROTACIÓN ALTA: " & Format(rotacionPromedio, "0.00") & " - Considerar aumentar stock" & vbCrLf
-    Else
-        recomendacion = recomendacion & "? ROTACIÓN ÓPTIMA: " & Format(rotacionPromedio, "0.00") & vbCrLf
-    End If
-    
-    If stockMuerto > totalRefs * 0.2 Then
-        recomendacion = recomendacion & "? STOCK MUERTO ALTO: " & stockMuerto & " referencias sin stock" & vbCrLf
-    End If
-    
-    If stockCritico > totalRefs * 0.15 Then
-        recomendacion = recomendacion & "?? STOCK CRÍTICO: " & stockCritico & " referencias con menos de 5 unidades" & vbCrLf
-    End If
-    
-    wsDash.Range("A26").Value = recomendacion
-
-    ' Generar hoja de recomendación mejorada
-    Call GenerarHojaRecomendacionAvanzada
-
-    MsgBox "Procesamiento completado. Dashboard actualizado con análisis completo.", vbInformation
-End Sub
-
-Public Sub GenerarHojaRecomendacionAvanzada()
-    Dim wsInv As Worksheet, wsVentas As Worksheet, wsComp As Worksheet, wsRec As Worksheet
-    Dim ultInv As Long, ultVentas As Long, ultComp As Long, i As Long, filaActual As Long
-    Dim dictVentas As Object, dictComparativa As Object
-    
-    Set wsInv = Worksheets("Inventario_Temp")
-    Set wsVentas = Worksheets("Ventas_Temp")
-    Set wsComp = Worksheets("Comparativa_Temp")
-    
-    ' Borrar hoja anterior si existe
-    On Error Resume Next
-    Application.DisplayAlerts = False
-    Worksheets("Recomendacion_Pedido").Delete
-    Application.DisplayAlerts = True
-    On Error GoTo 0
-    
-    Set wsRec = Worksheets.Add(After:=Worksheets(Worksheets.Count))
-    wsRec.Name = "Recomendacion_Pedido"
-    
-    ' Encabezados mejorados
-    With wsRec.Range("A1:M1")
-        .Value = Array("Código", "Descripción", "Stock Actual", "Precio Coste", "Precio Venta", _
-                      "Ventas Cliente", "Ventas Mercado", "Rotación", "% Cuota", "Días Stock", _
-                      "Clasificación ABC", "Recomendación", "Cantidad Sugerida")
-        .Font.Bold = True
-        .Interior.Color = RGB(68, 114, 196)
-        .Font.Color = RGB(255, 255, 255)
-    End With
-    
-    ' Construir diccionarios de ventas
-    Set dictVentas = CreateObject("Scripting.Dictionary")
-    Set dictComparativa = CreateObject("Scripting.Dictionary")
-    
-    ultVentas = wsVentas.Cells(wsVentas.Rows.Count, 1).End(xlUp).Row
-    For i = 2 To ultVentas
-        Dim codigoProd As String
-        codigoProd = CStr(wsVentas.Cells(i, 1).Value)
-        If Not dictVentas.Exists(codigoProd) Then
-            dictVentas(codigoProd) = wsVentas.Cells(i, 3).Value ' Cantidad Vendida
-        Else
-            dictVentas(codigoProd) = dictVentas(codigoProd) + wsVentas.Cells(i, 3).Value
-        End If
-    Next i
-    
-    ultComp = wsComp.Cells(wsComp.Rows.Count, 1).End(xlUp).Row
-    For i = 2 To ultComp
-        codigoProd = CStr(wsComp.Cells(i, 1).Value)
-        If Not dictComparativa.Exists(codigoProd) Then
-            dictComparativa(codigoProd) = wsComp.Cells(i, 3).Value ' Cantidad Vendida Mercado
-        Else
-            dictComparativa(codigoProd) = dictComparativa(codigoProd) + wsComp.Cells(i, 3).Value
-        End If
-    Next i
-    
-    ' Procesar cada producto del inventario
-    ultInv = wsInv.Cells(wsInv.Rows.Count, 1).End(xlUp).Row
-    filaActual = 2
-    
-    For i = 2 To ultInv
-        Dim cod As String, desc As String
-        Dim stock As Double, precioCoste As Double, precioVenta As Double
-        Dim ventasCliente As Double, ventasMercado As Double, rotacion As Double
-        Dim cuotaMercado As Double, diasStock As Long
-        Dim clasificacionABC As String, recomendacion As String, cantidadSugerida As Long
-        
-        ' Datos básicos
-        cod = CStr(wsInv.Cells(i, 1).Value)
-        desc = CStr(wsInv.Cells(i, 2).Value)
-        stock = Val(wsInv.Cells(i, 3).Value)
-        precioCoste = Val(wsInv.Cells(i, 4).Value)
-        precioVenta = Val(wsInv.Cells(i, 5).Value) ' Asumiendo que existe columna E con precio venta
-        
-        ' Ventas
-        If dictVentas.Exists(cod) Then
-            ventasCliente = dictVentas(cod)
-        Else
-            ventasCliente = 0
-        End If
-        
-        If dictComparativa.Exists(cod) Then
-            ventasMercado = dictComparativa(cod)
-        Else
-            ventasMercado = 0
-        End If
-        
-        ' Cálculos avanzados
-        If stock > 0 And ventasCliente > 0 Then
-            rotacion = ventasCliente / stock
-            diasStock = Int(30 / (ventasCliente / 30)) ' Estimación días que durará el stock
-        ElseIf ventasCliente > 0 Then
-            rotacion = 999 ' Indicador de que se vende pero no hay stock
-            diasStock = 0
-        Else
-            rotacion = 0
-            diasStock = 999
-        End If
-        
-        ' Cuota de mercado
-        If ventasMercado > 0 Then
-            cuotaMercado = (ventasCliente / ventasMercado) * 100
-        Else
-            cuotaMercado = 0
-        End If
-        
-        ' Clasificación ABC basada en ventas
-        If ventasCliente >= 20 Then
-            clasificacionABC = "A - Alto"
-        ElseIf ventasCliente >= 5 Then
-            clasificacionABC = "B - Medio"
-        ElseIf ventasCliente > 0 Then
-            clasificacionABC = "C - Bajo"
-        Else
-            clasificacionABC = "D - Sin ventas"
-        End If
-        
-        ' Lógica de recomendación mejorada
-        cantidadSugerida = 0
-        If ventasCliente = 0 Then
-            recomendacion = "?? SIN VENTAS - No pedir"
-        ElseIf stock = 0 Then
-            If ventasCliente >= 10 Then
-                recomendacion = "?? URGENTE - Stock agotado con demanda alta"
-                cantidadSugerida = Application.WorksheetFunction.Max(ventasCliente * 2, 10)
-            ElseIf ventasCliente >= 3 Then
-                recomendacion = "?? CRÍTICO - Reponer stock"
-                cantidadSugerida = Application.WorksheetFunction.Max(ventasCliente * 1.5, 5)
-            Else
-                recomendacion = "? PEDIR - Baja demanda"
-                cantidadSugerida = 3
-            End If
-        ElseIf stock < 3 And ventasCliente > 0 Then
-            recomendacion = "?? BAJO STOCK - Aumentar pedido"
-            cantidadSugerida = Application.WorksheetFunction.Max((ventasCliente * 2) - stock, 5)
-        ElseIf diasStock < 15 And ventasCliente >= 5 Then
-            recomendacion = "? STOCK < 15 DÍAS - Pedir pronto"
-            cantidadSugerida = ventasCliente
-        ElseIf rotacion > 3 Then
-            recomendacion = "?? ALTA ROTACIÓN - Optimizar stock"
-            cantidadSugerida = Int(ventasCliente * 0.5)
-        ElseIf diasStock > 60 Then
-            recomendacion = "?? STOCK LENTO - No pedir"
-        Else
-            recomendacion = "? STOCK ÓPTIMO"
-        End If
-        
-        ' Escribir datos en la hoja
-        wsRec.Cells(filaActual, 1).Value = cod
-        wsRec.Cells(filaActual, 2).Value = desc
-        wsRec.Cells(filaActual, 3).Value = stock
-        wsRec.Cells(filaActual, 4).Value = Format(precioCoste, "0.00")
-        wsRec.Cells(filaActual, 5).Value = Format(precioVenta, "0.00")
-        wsRec.Cells(filaActual, 6).Value = ventasCliente
-        wsRec.Cells(filaActual, 7).Value = ventasMercado
-        wsRec.Cells(filaActual, 8).Value = Format(rotacion, "0.00")
-        wsRec.Cells(filaActual, 9).Value = Format(cuotaMercado, "0.0") & "%"
-        wsRec.Cells(filaActual, 10).Value = IIf(diasStock = 999, "8", diasStock)
-        wsRec.Cells(filaActual, 11).Value = clasificacionABC
-        wsRec.Cells(filaActual, 12).Value = recomendacion
-        wsRec.Cells(filaActual, 13).Value = cantidadSugerida
-        
-        filaActual = filaActual + 1
-    Next i
-    
-    ' Formatear la hoja
-    With wsRec
-        .Columns.AutoFit
-        .Range("A1:M" & filaActual - 1).Borders.LineStyle = xlContinuous
-        
-        ' Formato condicional para recomendaciones
-        Dim rngRecomendacion As Range
-        Set rngRecomendacion = .Range("L2:L" & filaActual - 1)
-        
-        ' Aplicar colores según tipo de recomendación
-        For i = 2 To filaActual - 1
-            If InStr(.Cells(i, 12).Value, "??") > 0 Then
-                .Cells(i, 12).Interior.Color = RGB(255, 100, 100) ' Rojo urgente
-            ElseIf InStr(.Cells(i, 12).Value, "??") > 0 Then
-                .Cells(i, 12).Interior.Color = RGB(255, 200, 100) ' Naranja crítico
-            ElseIf InStr(.Cells(i, 12).Value, "?") > 0 Then
-                .Cells(i, 12).Interior.Color = RGB(100, 255, 100) ' Verde óptimo
-            ElseIf InStr(.Cells(i, 12).Value, "??") > 0 Then
-                .Cells(i, 12).Interior.Color = RGB(200, 200, 200) ' Gris sin ventas
-            End If
-        Next i
-        
-        ' Freeze panes
-        .Range("A2").Select
-        ActiveWindow.FreezePanes = True
-    End With
-    
-    ' Crear resumen en la parte superior
-    wsRec.Range("O1").Value = "RESUMEN EJECUTIVO"
-    wsRec.Range("O1").Font.Bold = True
-    wsRec.Range("O1").Font.Size = 14
-    
-    Dim contUrgente As Long, contCritico As Long, contOptimo As Long, contSinVentas As Long
-    For i = 2 To filaActual - 1
-        If InStr(wsRec.Cells(i, 12).Value, "??") > 0 Then contUrgente = contUrgente + 1
-        If InStr(wsRec.Cells(i, 12).Value, "??") > 0 Then contCritico = contCritico + 1
-        If InStr(wsRec.Cells(i, 12).Value, "?") > 0 Then contOptimo = contOptimo + 1
-        If InStr(wsRec.Cells(i, 12).Value, "??") > 0 Then contSinVentas = contSinVentas + 1
-    Next i
-    
-    wsRec.Range("O3").Value = "?? Urgentes: " & contUrgente
-    wsRec.Range("O4").Value = "?? Críticos: " & contCritico
-    wsRec.Range("O5").Value = "? Óptimos: " & contOptimo
-    wsRec.Range("O6").Value = "?? Sin ventas: " & contSinVentas
-    
-    MsgBox "Hoja de recomendación generada con análisis completo de " & (filaActual - 2) & " productos.", vbInformation
-End Sub
-
-Public Sub GenerarReporte()
-    If clienteSeleccionado = "" Then
-        MsgBox "Seleccione un cliente primero.", vbExclamation
-        Exit Sub
-    End If
-
-    Dim nombreArchivo As Variant
-    nombreArchivo = Application.GetSaveAsFilename("Reporte_Completo_" & clienteSeleccionado & "_" & Replace(nombreCliente, " ", "_") & "_" & Format(Date, "yyyymmdd") & ".xlsx", "Archivos Excel (*.xlsx), *.xlsx")
-    If nombreArchivo = False Then Exit Sub
-
-    Application.ScreenUpdating = False
-    Application.DisplayAlerts = False
-
-    On Error GoTo ErrorHandler
-    Dim wbReporte As Workbook
-    Set wbReporte = Workbooks.Add
-    
-    ' Copiar hojas relevantes al reporte
-    ThisWorkbook.Sheets("Dashboard").Copy Before:=wbReporte.Sheets(1)
-    ThisWorkbook.Sheets("Recomendacion_Pedido").Copy Before:=wbReporte.Sheets(1)
-    
-    ' Eliminar hojas en blanco del reporte
-    Dim s As Worksheet
-    For Each s In wbReporte.Worksheets
-        If s.Name <> "Dashboard" And s.Name <> "Recomendacion_Pedido" Then
-            Application.DisplayAlerts = False
-            s.Delete
-            Application.DisplayAlerts = True
-        End If
-    Next s
-    
-    ' Hacer visibles las hojas copiadas
-    wbReporte.Sheets("Dashboard").Visible = xlSheetVisible
-    wbReporte.Sheets("Recomendacion_Pedido").Visible = xlSheetVisible
-    
-    wbReporte.SaveAs nombreArchivo, FileFormat:=xlOpenXMLWorkbook
-    wbReporte.Close False
-
-    Application.ScreenUpdating = True
-    Application.DisplayAlerts = True
-    MsgBox "Reporte completo generado exitosamente en: " & nombreArchivo, vbInformation
-    Exit Sub
-
-ErrorHandler:
-    Application.ScreenUpdating = True
-    Application.DisplayAlerts = True
-    MsgBox "Error al generar el reporte: " & Err.Description, vbCritical
-End Sub
-
-Public Sub LimpiarVariables()
-    clienteSeleccionado = ""
-    nombreCliente = ""
-    rutaInventario = ""
-    rutaVentas = ""
-    rutaComparativa = ""
-End Sub
-
+    document.getElementById('btnProcesar').onclick = function() {
+      const clienteCodigo = document.getElementById('clienteCodigo').value.trim();
+      const clienteNombre = document.getElementById('clienteNombre').value.trim();
+      if (!clienteCodigo || !clienteNombre || !inventario.length || !ventas.length || !comparativa.length) {
+        alert("Por favor, complete cliente y cargue los tres archivos.");
+        return;
+      }
+      // Procesamiento de KPIs y recomendaciones
+      let totalRefs = inventario.length - 1;
+      let valorInventario = 0, stockMuerto = 0, stockCritico = 0, ventasNeto = 0, ventasTotalesComp = 0, margenTotal = 0, contadorMargen = 0;
+      let recs = [];
+      const IDX = { COD: 0, DESC: 1, STOCK: 2, COSTE: 3, VENTA: 4 };
+      let ventasMap = {}, compMap = {};
+      ventas.slice(1).forEach(row => ventasMap[row[0]] = row[2]);
+      comparativa.slice(1).forEach(row => compMap[row[0]] = row[2]);
+      inventario.slice(1).forEach(row => {
+        let stock = Number(row[IDX.STOCK]) || 0;
+        let coste = Number(row[IDX.COSTE]) || 0;
+        let venta = Number(row[IDX.VENTA]) || 0;
+        let ventasCliente = Number(ventasMap[row[IDX.COD]]) || 0;
+        let ventasMercado = Number(compMap[row[IDX.COD]]) || 0;
+        valorInventario += stock * coste;
+        if (stock === 0) stockMuerto++;
+        if (stock > 0 && stock < 5) stockCritico++;
+        ventasNeto += ventasCliente * venta;
+        if (venta > 0) {
+          margenTotal += (venta - coste) / venta;
+          contadorMargen++;
+        }
+        let alertClass = '', alertLabel = '';
+        if (ventasCliente === 0)      { alertClass = 'sinventas'; alertLabel = '❌ SIN VENTAS'; }
+        else if (stock === 0) {
+          if (ventasCliente >= 10)    { alertClass = 'urgente'; alertLabel = '?? URGENTE'; }
+          else if (ventasCliente >= 3){ alertClass = 'critico'; alertLabel = '? CRÍTICO'; }
+          else                        { alertClass = 'bajo'; alertLabel = '? BAJO STOCK'; }
+        }
+        else if (stock < 3 && ventasCliente > 0) { alertClass = 'bajo'; alertLabel = '? BAJO STOCK'; }
+        else if (ventasCliente / (stock||1) > 3) { alertClass = 'optimo'; alertLabel = '✔️ ÓPTIMO'; }
+        else if (ventasCliente < 2)              { alertClass = 'lento'; alertLabel = 'ℹ️ LENTO'; }
+        else                                     { alertClass = 'optimo'; alertLabel = '✔️ ÓPTIMO'; }
+        recs.push({ cod: row[IDX.COD], desc: row[IDX.DESC], stock, coste, venta, ventasCliente, ventasMercado, alertClass, alertLabel });
+      });
+      ventasTotalesComp = comparativa.slice(1).reduce((a, row) => a + (Number(row[2]) * Number(row[3]||1)), 0);
+      let kpis = {
+        totalRefs, valorInventario, ventasNeto, stockMuerto, stockCritico,
+        cuota: ventasTotalesComp ? (ventasNeto / ventasTotalesComp * 100).toFixed(2) + "%" : "N/A",
+        margen: contadorMargen ? (margenTotal / contadorMargen * 100).toFixed(2) + "%" : "N/A"
+      };
+      // Mostrar KPIs
+      document.getElementById('kpisSection').style.display = '';
+      document.getElementById('kpis').innerHTML =
+        `<div><b>Cliente:</b> ${clienteCodigo} - ${clienteNombre}</div>
+         <div><b>Referencias:</b> ${kpis.totalRefs}</div>
+         <div><b>Valor Inventario:</b> ${kpis.valorInventario.toLocaleString("es-ES", { minimumFractionDigits: 2 })}</div>
+         <div><b>Ventas Neto:</b> ${kpis.ventasNeto.toLocaleString("es-ES", { minimumFractionDigits: 2 })}</div>
+         <div><b>Stock Muerto:</b> ${kpis.stockMuerto}</div>
+         <div><b>Stock Crítico:</b> ${kpis.stockCritico}</div>
+         <div><b>Cuota vs Mercado:</b> ${kpis.cuota}</div>
+         <div><b>Margen Promedio:</b> ${kpis.margen}</div>`;
+      // Mostrar Recomendaciones
+      document.getElementById('recsSection').style.display = '';
+      let tbody = document.getElementById('tablaRecs').querySelector('tbody');
+      tbody.innerHTML = '';
+      recs.forEach(r => {
+        let tr = document.createElement('tr');
+        tr.innerHTML = `<td>${r.cod}</td><td>${r.desc}</td><td>${r.stock}</td>
+          <td>${r.coste}</td><td>${r.venta}</td><td>${r.ventasCliente}</td>
+          <td>${r.ventasMercado}</td>
+          <td><span class="alert ${r.alertClass}">${r.alertLabel}</span></td>`;
+        tbody.appendChild(tr);
+      });
+    };
+  </script>
+</body>
+</html>
