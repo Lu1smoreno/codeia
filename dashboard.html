@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Dashboard de Inventario - Cliente</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <link rel="stylesheet" href="https://cdn.datatables.net/2.0.8/css/dataTables.dataTables.min.css">
+    <style>
+        body { margin: 0; font-family: 'Segoe UI', Arial, sans-serif; background: #eef2fb; color: #333; }
+        header { background: #446ccc; color: #fff; padding: 1.5em 2em; box-shadow: 0 2px 8px #2235; display: flex; justify-content: space-between; align-items: center; }
+        header h1 { margin: 0; font-size: 1.8em; }
+        .dashboard-container { padding: 2em; max-width: 1200px; margin: 2.5em auto; background: #fff; border-radius: 14px; box-shadow: 0 2px 16px #446ccc20; }
+        .kpis-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5em;
+            margin-bottom: 2.5em;
+        }
+        .kpi-card {
+            background: #f7faff;
+            padding: 1.2em;
+            border-radius: 8px;
+            box-shadow: 0 2px 8px rgba(68, 108, 204, 0.1);
+            text-align: center;
+            border-left: 5px solid #446ccc;
+        }
+        .kpi-card h3 { margin: 0 0 0.5em 0; color: #446ccc; font-size: 1.1em; }
+        .kpi-card p { margin: 0; font-size: 1.8em; font-weight: bold; color: #333; }
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2em;
+            margin-bottom: 2.5em;
+        }
+        .chart-container {
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 2px 12px rgba(68, 108, 204, 0.05);
+            padding: 1.5em;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .chart-container h3 { text-align: center; margin-top: 0; color: #446ccc; font-size: 1.2em;}
+        .data-table-section { margin-top: 3em; }
+        .data-table-section h2 { text-align: center; margin-bottom: 1.5em; color: #446ccc; }
+
+        /* Estilos de alerta para la tabla */
+        .alert { font-weight: bold; padding: 4px 8px; border-radius: 6px; display: inline-block; white-space: nowrap; }
+        .urgente { background: #ff6464; color: #222; }
+        .critico { background: #ffbc64; color: #222; }
+        .bajo { background: #ffff64; color: #222; }
+        .optimo { background: #64ff64; color: #222; }
+        .lento { background: #cccccc; color: #222; }
+        .sinventas { background: #b4b4b4; color: #222; }
+
+        /* Estilos de DataTables */
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            padding: 0.5em 1em;
+            margin-left: 2px;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            cursor: pointer;
+            color: #446ccc;
+            background-color: #f7faff;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+            background-color: #446ccc;
+            color: white !important;
+            border-color: #446ccc;
+        }
+        .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+            background-color: #e0e9f6;
+            color: #264499;
+        }
+        .dataTables_wrapper .dataTables_filter input,
+        .dataTables_wrapper .dataTables_length select {
+            border: 1px solid #bbc6e6;
+            border-radius: 7px;
+            padding: 8px 12px;
+            font-size: 0.9em;
+        }
+        .dataTables_wrapper .dataTables_info,
+        .dataTables_wrapper .dataTables_length,
+        .dataTables_wrapper .dataTables_filter,
+        .dataTables_wrapper .dataTables_paginate {
+            padding-top: 1em;
+            padding-bottom: 1em;
+            color: #555;
+        }
+        table.dataTable thead th {
+            background-color: #446ccc;
+            color: #fff;
+            border-bottom: 1px solid #446ccc;
+            padding: 10px 15px;
+            text-align: left;
+        }
+        table.dataTable tbody tr {
+            background-color: #fff;
+        }
+        table.dataTable tbody tr:nth-child(even) {
+            background-color: #f8fafd;
+        }
+        table.dataTable tbody td {
+            padding: 10px 15px;
+            border-bottom: 1px solid #e7eaf2;
+        }
+
+        .back-button {
+            background: #b44;
+            color: #fff;
+            border: none;
+            border-radius: 7px;
+            padding: 10px 15px;
+            font-size: 1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background .2s;
+        }
+        .back-button:hover {
+            background: #903;
+        }
+
+        footer {
+            text-align: center;
+            margin: 3em 0 1em 0;
+            color: #888;
+            font-size: 0.9em;
+        }
+
+        /* Responsiveness */
+        @media (max-width: 768px) {
+            .kpis-grid, .charts-grid {
+                grid-template-columns: 1fr;
+            }
+            .dashboard-container {
+                padding: 1em;
+                margin: 1em auto;
+            }
+            header {
+                flex-direction: column;
+                padding: 1em;
+            }
+            header h1 {
+                margin-bottom: 0.5em;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1 id="dashboardTitle">Dashboard de Inventario</h1>
+        <button class="back-button" onclick="window.close()">Volver a Gestión</button>
+    </header>
+
+    <div class="dashboard-container">
+        <h2 style="text-align: center; color: #446ccc; margin-bottom: 1.5em;">Indicadores Clave de Rendimiento (KPIs)</h2>
+        <div class="kpis-grid" id="kpisGrid">
+            </div>
+
+        <h2 style="text-align: center; color: #446ccc; margin-bottom: 1.5em;">Análisis Visual de Datos</h2>
+        <div class="charts-grid" id="chartsGrid">
+            <div class="chart-container">
+                <h3>Estado del Inventario por Categoría</h3>
+                <canvas id="chartInventario"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Top 10 Referencias con Más Ventas</h3>
+                <canvas id="chartVentas"></canvas>
+            </div>
+            <div class="chart-container">
+                <h3>Margen Promedio (%)</h3>
+                <canvas id="chartMargen"></canvas>
+            </div>
+        </div>
+
+        <div class="data-table-section">
+            <h2>Recomendaciones de Inventario Detalladas</h2>
+            <table id="recsTable" class="display" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>Código</th>
+                        <th>Descripción</th>
+                        <th>Stock</th>
+                        <th>Coste (€)</th>
+                        <th>Venta (€)</th>
+                        <th>Ventas Cliente</th>
+                        <th>Ventas Mercado</th>
+                        <th>Recomendación</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    </tbody>
+            </table>
+        </div>
+    </div>
+
+    <footer>
+        &copy; <span id="year"></span> - Gestor de Inventario - Dashboard Profesional
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.3.2/dist/chart.umd.min.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.datatables.net/2.0.8/js/dataTables.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+    <script>
+        document.getElementById('year').textContent = new Date().getFullYear();
+
+        let chartInv, chartVen, chartMar;
+        let dataTableRecs;
+
+        document.addEventListener('DOMContentLoaded', () => {
+            const dashboardDataString = localStorage.getItem('dashboardData');
+            const nombreClienteDashboard = localStorage.getItem('nombreClienteDashboard');
+
+            if (!dashboardDataString) {
+                Swal.fire({
+                    title: 'No hay datos disponibles',
+                    text: 'Por favor, procesa los datos en la página de gestión antes de abrir el dashboard.',
+                    icon: 'warning',
+                    confirmButtonText: 'Volver a Gestión'
+                }).then(() => {
+                    window.close(); // Cierra la ventana si no hay datos
+                });
+                return;
+            }
+
+            const processedData = JSON.parse(dashboardDataString);
+
+            // Actualizar el título del dashboard
+            document.getElementById('dashboardTitle').textContent = `Dashboard de Inventario - ${processedData.nombreCliente}`;
+
+            // Cargar KPIs
+            loadKPIs(processedData.kpis);
+
+            // Cargar Gráficos
+            loadCharts(processedData);
+
+            // Cargar Tabla de Recomendaciones
+            loadRecommendationsTable(processedData.recs);
+        });
+
+        function loadKPIs(kpis) {
+            const kpisGrid = document.getElementById('kpisGrid');
+            kpisGrid.innerHTML = `
+                <div class="kpi-card"><h3>Referencias Totales</h3><p>${kpis.totalRefs}</p></div>
+                <div class="kpi-card"><h3>Valor de Inventario</h3><p>${parseFloat(kpis.valorInventario).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p></div>
+                <div class="kpi-card"><h3>Ventas Netas</h3><p>${parseFloat(kpis.ventasNeto).toLocaleString('es-ES', { style: 'currency', currency: 'EUR' })}</p></div>
+                <div class="kpi-card"><h3>Stock Muerto</h3><p>${kpis.stockMuerto}</p></div>
+                <div class="kpi-card"><h3>Stock Crítico</h3><p>${kpis.stockCritico}</p></div>
+                <div class="kpi-card"><h3>Cuota vs. Mercado</h3><p>${kpis.cuota}</p></div>
+                <div class="kpi-card"><h3>Margen Promedio</h3><p>${kpis.margen}</p></div>
+            `;
+        }
+
+        function loadCharts(processedData) {
+            // Inventario Pie Chart
+            if (chartInv) chartInv.destroy();
+            chartInv = new Chart(document.getElementById('chartInventario').getContext('2d'), {
+                type: 'pie',
+                data: {
+                    labels: ['Sano', 'Crítico', 'Muerto', 'Bajo', 'Sin ventas'],
+                    datasets: [{
+                        data: [
+                            processedData.statusCount.sano,
+                            processedData.statusCount.critico,
+                            processedData.statusCount.muerto,
+                            processedData.statusCount.bajo,
+                            processedData.statusCount.sinventas
+                        ],
+                        backgroundColor: ['#64ff64', '#ffbc64', '#ff6464', '#ffff64', '#b4b4b4'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed;
+                                    }
+                                    return label;
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Ventas Bar Chart (Top 10)
+            if (chartVen) chartVen.destroy();
+            chartVen = new Chart(document.getElementById('chartVentas').getContext('2d'), {
+                type: 'bar',
+                data: {
+                    labels: processedData.top10VentasLabels,
+                    datasets: [{
+                        label: "Ventas por Referencia",
+                        data: processedData.top10VentasData,
+                        backgroundColor: '#446ccc',
+                        borderColor: '#264499',
+                        borderWidth: 1
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: { display: false },
+                        title: {
+                            display: true,
+                            text: 'Top 10 Referencias con Más Ventas'
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            title: {
+                                display: true,
+                                text: 'Unidades Vendidas'
+                            }
+                        },
+                        x: {
+                             title: {
+                                display: true,
+                                text: 'Código de Referencia'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Margen Promedio Doughnut Chart
+            if (chartMar) chartMar.destroy();
+            const margenVal = parseFloat(processedData.margenNumerico);
+            chartMar = new Chart(document.getElementById('chartMargen').getContext('2d'), {
+                type: 'doughnut',
+                data: {
+                    labels: ['Margen (%)', 'Resto (%)'],
+                    datasets: [{
+                        data: [margenVal, 100 - margenVal],
+                        backgroundColor: ['#446ccc', '#e9eaf5'],
+                        borderColor: '#fff',
+                        borderWidth: 2
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    cutout: '70%',
+                    plugins: {
+                        legend: { position: 'bottom' },
+                        tooltip: {
+                            callbacks: {
+                                label: function(context) {
+                                    let label = context.label || '';
+                                    if (label) {
+                                        label += ': ';
+                                    }
+                                    if (context.parsed !== null) {
+                                        label += context.parsed.toFixed(2) + '%';
+                                    }
+                                    return label;
+                                }
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: `Margen Promedio: ${margenVal.toFixed(2)}%` // Título dinámico
+                        }
+                    }
+                }
+            });
+        }
+
+        function loadRecommendationsTable(recs) {
+            if (dataTableRecs) {
+                dataTableRecs.destroy(); // Destruir la instancia existente si la hay
+            }
+
+            const tableData = recs.map(r => [
+                r.cod,
+                r.desc,
+                r.stock,
+                r.coste,
+                r.venta,
+                r.ventasCliente,
+                r.ventasMercado,
+                `<span class="alert ${r.alertClass}">${r.alertLabel}</span>`
+            ]);
+
+            dataTableRecs = $('#recsTable').DataTable({
+                data: tableData,
+                columns: [
+                    { title: "Código" },
+                    { title: "Descripción" },
+                    { title: "Stock" },
+                    { title: "Coste (€)" },
+                    { title: "Venta (€)" },
+                    { title: "Ventas Cliente" },
+                    { title: "Ventas Mercado" },
+                    { title: "Recomendación" }
+                ],
+                responsive: true,
+                language: {
+                    url: 'https://cdn.datatables.net/plug-ins/1.11.5/i18n/es-ES.json' // Idioma español
+                }
+            });
+        }
+
+        function generarReporteExcel() {
+            const dashboardDataString = localStorage.getItem('dashboardData');
+            if (!dashboardDataString) {
+                Swal.fire('Error', 'No hay datos para exportar. Por favor, procesa los datos primero.', 'error');
+                return;
+            }
+            const processedData = JSON.parse(dashboardDataString);
+
+            const wb = XLSX.utils.book_new();
+
+            // Pestaña de KPIs
+            const kpisForExcel = [
+                ["KPI", "Valor"],
+                ["Cliente", processedData.nombreCliente],
+                ["Referencias Totales", processedData.kpis.totalRefs],
+                ["Valor de Inventario", parseFloat(processedData.kpis.valorInventario)],
+                ["Ventas Netas", parseFloat(processedData.kpis.ventasNeto)],
+                ["Stock Muerto", processedData.kpis.stockMuerto],
+                ["Stock Crítico", processedData.kpis.stockCritico],
+                ["Cuota vs. Mercado", processedData.kpis.cuota],
+                ["Margen Promedio", processedData.kpis.margen]
+            ];
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(kpisForExcel), "KPIs Resumen");
+
+            // Pestaña de Recomendaciones
+            const recsForExcel = processedData.recs.map(r => [
+                r.cod, r.desc, r.stock, parseFloat(r.coste), parseFloat(r.venta),
+                r.ventasCliente, r.ventasMercado, r.alertLabel
+            ]);
+            recsForExcel.unshift(["Código", "Descripción", "Stock", "Coste (€)", "Venta (€)", "Ventas Cliente", "Ventas Mercado", "Recomendación"]);
+            XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(recsForExcel), "Recomendaciones");
+
+            XLSX.writeFile(wb, `Reporte_Inventario_${processedData.nombreCliente.replace(/\s+/g,'_')}.xlsx`);
+            Swal.fire('¡Éxito!', 'Reporte Excel generado correctamente.', 'success');
+        }
+    </script>
+</body>
+</html>
